@@ -1,0 +1,15 @@
+{
+  "short_name": "Electron React Bootstrap",
+  "name": "Electron React Bootstrap Application",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
