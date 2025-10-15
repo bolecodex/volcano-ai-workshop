@@ -86,22 +86,47 @@ function SmartSearch() {
           );
           const videoUrl = videoField ? (item.fields[videoField]?.value || item.fields[videoField]) : null;
           
-          // 如果是 TOS URL 且未生成预签名 URL
-          if (videoUrl && typeof videoUrl === 'string' && videoUrl.startsWith('tos://') && !presignedUrls[videoUrl]) {
+          if (!videoUrl || typeof videoUrl !== 'string' || presignedUrls[videoUrl]) {
+            continue;
+          }
+          
+          let tosUrl = null;
+          let needsPresigning = false;
+          
+          // 检查是否是 TOS URL (tos://格式)
+          if (videoUrl.startsWith('tos://')) {
+            tosUrl = videoUrl;
+            needsPresigning = true;
+          }
+          // 检查是否是 TOS HTTPS URL
+          else if (videoUrl.includes('.tos-cn-beijing.volces.com/') || 
+                   videoUrl.includes('.tos') && videoUrl.includes('.volces.com/')) {
+            // 从HTTPS URL转换回TOS URL格式
+            const httpsMatch = videoUrl.match(/https?:\/\/([^.]+)\.tos[^/]*\.volces\.com\/(.+)$/);
+            if (httpsMatch) {
+              const [, bucket, objectKey] = httpsMatch;
+              tosUrl = `tos://${bucket}/${objectKey}`;
+              needsPresigning = true;
+            }
+          }
+          
+          // 如果需要预签名且未生成过
+          if (needsPresigning && tosUrl && !presignedUrls[videoUrl]) {
             try {
-              console.log('🔗 生成 TOS 预签名 URL:', videoUrl);
+              console.log('🔗 生成 TOS 预签名 URL:', tosUrl, '(原始URL:', videoUrl, ')');
               
               if (window.electronAPI && window.electronAPI.getTosPreSignedUrl) {
                 const response = await window.electronAPI.getTosPreSignedUrl({
                   accessKeyId,
                   secretAccessKey,
-                  tosUrl: videoUrl,
+                  tosUrl: tosUrl,
                   region: 'cn-beijing',
                   endpoint: 'tos-cn-beijing.volces.com',
                   expiresIn: 3600
                 });
                 
                 if (response.success && response.data && response.data.url) {
+                  // 使用原始URL作为key，这样可以匹配HTTPS格式的URL
                   newPresignedUrls[videoUrl] = response.data.url;
                   console.log('✅ 预签名 URL 生成成功');
                 } else {
@@ -124,7 +149,8 @@ function SmartSearch() {
     };
     
     generatePresignedUrls();
-  }, [searchResult, accessKeyId, secretAccessKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
+  }, [searchResult, accessKeyId, secretAccessKey]);
 
   // 处理图片上传
   const handleImageUpload = (e) => {
@@ -573,16 +599,25 @@ function SmartSearch() {
                         const isTosUrl = videoUrl && typeof videoUrl === 'string' && videoUrl.startsWith('tos://');
                         let isHttpUrl = videoUrl && typeof videoUrl === 'string' && (videoUrl.startsWith('http://') || videoUrl.startsWith('https://'));
                         
-                        // 将 TOS 地址转换为 HTTP 地址
+                        // 优先使用预签名URL，如果没有则转换为HTTP地址
                         let displayUrl = videoUrl;
+                        let needsPresignedUrl = false;
+                        
                         if (isTosUrl) {
-                          // 解析 TOS URL: tos://bucket/object_key
-                          const tosMatch = videoUrl.match(/^tos:\/\/([^/]+)\/(.+)$/);
-                          if (tosMatch) {
-                            const [, bucket, objectKey] = tosMatch;
-                            // 构造 HTTP URL（假设使用华北2北京的 endpoint）
-                            displayUrl = `https://${bucket}.tos-cn-beijing.volces.com/${objectKey}`;
+                          // 检查是否已有预签名URL
+                          if (presignedUrls[videoUrl]) {
+                            displayUrl = presignedUrls[videoUrl];
                             isHttpUrl = true;
+                          } else {
+                            // 解析 TOS URL: tos://bucket/object_key
+                            const tosMatch = videoUrl.match(/^tos:\/\/([^/]+)\/(.+)$/);
+                            if (tosMatch) {
+                              const [, bucket, objectKey] = tosMatch;
+                              // 构造 HTTP URL（假设使用华北2北京的 endpoint）
+                              displayUrl = `https://${bucket}.tos-cn-beijing.volces.com/${objectKey}`;
+                              isHttpUrl = true;
+                              needsPresignedUrl = true; // 标记需要预签名URL
+                            }
                           }
                         }
                         
@@ -591,7 +626,12 @@ function SmartSearch() {
                             <Card>
                               {/* 视频预览区域 */}
                               <div style={{ height: '200px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                                {isHttpUrl ? (
+                                {needsPresignedUrl && generatingUrls ? (
+                                  <div className="text-white text-center">
+                                    <Spinner animation="border" variant="light" className="mb-2" />
+                                    <div className="small">正在生成访问链接...</div>
+                                  </div>
+                                ) : isHttpUrl ? (
                                   <video 
                                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                     controls
@@ -674,10 +714,27 @@ function SmartSearch() {
                                   )}
                                 </div>
                                 
-                                {isTosUrl && (
-                                  <Alert variant="success" className="mt-2 mb-0 py-2 small">
-                                    <i className="bi bi-check-circle me-1"></i>
-                                    已自动转换 TOS 地址为可访问的 HTTP URL
+                                {(isTosUrl || needsPresignedUrl) && (
+                                  <Alert 
+                                    variant={presignedUrls[videoUrl] ? "success" : generatingUrls ? "info" : "warning"} 
+                                    className="mt-2 mb-0 py-2 small"
+                                  >
+                                    {presignedUrls[videoUrl] ? (
+                                      <>
+                                        <i className="bi bi-check-circle me-1"></i>
+                                        已使用预签名URL（1小时有效期）
+                                      </>
+                                    ) : generatingUrls ? (
+                                      <>
+                                        <Spinner animation="border" size="sm" className="me-1" />
+                                        正在生成预签名URL...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <i className="bi bi-exclamation-triangle me-1"></i>
+                                        TOS资源需要预签名URL才能访问
+                                      </>
+                                    )}
                                   </Alert>
                                 )}
                               </Card.Body>
