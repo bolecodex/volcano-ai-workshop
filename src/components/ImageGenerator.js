@@ -49,9 +49,7 @@ function ImageGenerator() {
     { value: 'doubao-seedream-4-0-250828', label: 'Seedream 4.0 (推荐)', description: '支持文生图、图生图、组图生成' },
     { value: 'jimeng-t2i-v40', label: '即梦AI 4.0 ⭐', description: '文生图、图生图、多图融合，支持4K，组图生成' },
     { value: 'jimeng-i2i-v30', label: '即梦图生图 3.0 智能参考 🖼️', description: '图生图编辑专用，精准执行编辑指令，保持图像完整性' },
-    { value: 'jimeng-t2i-v31', label: '即梦文生图 3.1 🎨', description: '画面美感升级，风格精准多样，细节丰富' },
-    { value: 'doubao-seedream-3-0-t2i', label: 'Seedream 3.0 T2I', description: '文生图专用模型' },
-    { value: 'doubao-seededit-3-0-i2i', label: 'SeedEdit 3.0 I2I', description: '图生图专用模型' }
+    { value: 'jimeng-t2i-v31', label: '即梦文生图 3.1 🎨', description: '画面美感升级，风格精准多样，细节丰富' }
   ];
 
   const sizeOptions = [
@@ -729,13 +727,6 @@ function ImageGenerator() {
       }
 
       // 根据模型添加特定参数
-      if (formData.model.includes('seedream-3') || formData.model.includes('seededit-3')) {
-        requestBody.guidance_scale = formData.guidance_scale;
-        if (formData.seed !== -1) {
-          requestBody.seed = formData.seed;
-        }
-      }
-
       if (formData.model.includes('seedream-4') && formData.sequential_image_generation === 'auto') {
         requestBody.sequential_image_generation_options = {
           max_images: formData.max_images
@@ -1073,20 +1064,6 @@ function ImageGenerator() {
               <div className="border-top pt-3">
                 <h6 className="text-muted">高级设置</h6>
                 
-                {/* 文本权重 / 编辑强度 */}
-                {(formData.model.includes('seedream-3') || formData.model.includes('seededit-3')) && (
-                  <Form.Group className="mb-3">
-                    <Form.Label>文本权重: {formData.guidance_scale}</Form.Label>
-                    <Form.Range
-                      min="1"
-                      max="10"
-                      step="0.1"
-                      value={formData.guidance_scale}
-                      onChange={(e) => handleInputChange('guidance_scale', parseFloat(e.target.value))}
-                    />
-                  </Form.Group>
-                )}
-
                 {/* 即梦图生图3.0 编辑强度 */}
                 {formData.model === 'jimeng-i2i-v30' && (
                   <Form.Group className="mb-3">
@@ -1105,7 +1082,7 @@ function ImageGenerator() {
                 )}
 
                 {/* 随机种子 */}
-                {(formData.model.includes('seedream-3') || formData.model.includes('seededit-3') || formData.model === 'jimeng-i2i-v30') && (
+                {(formData.model === 'jimeng-i2i-v30') && (
                   <Form.Group className="mb-3">
                     <Form.Label>随机种子</Form.Label>
                     <Form.Control
@@ -1240,7 +1217,7 @@ function ImageGenerator() {
           </Card>
 
           {/* 图片输入区域 - 支持图生图和多图融合 */}
-          {(formData.model.includes('seedream-4') || formData.model.includes('seededit-3') || formData.model === 'jimeng-i2i-v30') && (
+          {(formData.model.includes('seedream-4') || formData.model === 'jimeng-i2i-v30') && (
             <Card className="feature-card mb-4">
               <Card.Header className="bg-warning text-white">
                 <div className="d-flex justify-content-between align-items-center">
@@ -1276,13 +1253,6 @@ function ImageGenerator() {
                       {formData.model.includes('seedream-4') && (
                         <>
                           <li>doubao-seedream-4.0 支持 1-10 张参考图</li>
-                          <li>图片格式：JPEG、PNG | 大小：≤10MB | 像素：≤6000×6000</li>
-                          <li>宽高比范围：1/3 到 3 之间</li>
-                        </>
-                      )}
-                      {formData.model.includes('seededit-3') && (
-                        <>
-                          <li>doubao-seededit-3.0-i2i 仅支持单张图片</li>
                           <li>图片格式：JPEG、PNG | 大小：≤10MB | 像素：≤6000×6000</li>
                           <li>宽高比范围：1/3 到 3 之间</li>
                         </>
