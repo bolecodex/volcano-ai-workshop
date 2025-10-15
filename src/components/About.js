@@ -3,19 +3,19 @@ import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 
 function About({ electronInfo }) {
   const technologies = [
-    { name: 'Electron', version: '22.0.0', description: 'Cross-platform desktop apps', color: 'primary' },
-    { name: 'React', version: '18.2.0', description: 'JavaScript library for building user interfaces', color: 'info' },
-    { name: 'Bootstrap', version: '5.2.3', description: 'CSS framework for responsive design', color: 'success' },
-    { name: 'React Bootstrap', version: '2.7.0', description: 'Bootstrap components for React', color: 'warning' }
+    { name: 'Electron', version: '22.0.0', description: '跨平台桌面应用框架', color: 'primary' },
+    { name: 'React', version: '18.2.0', description: '现代化前端UI框架', color: 'info' },
+    { name: 'Bootstrap', version: '5.2.3', description: '响应式CSS框架', color: 'success' },
+    { name: '火山引擎 API', version: '最新', description: 'AI图片、视频生成API', color: 'warning' }
   ];
 
   const features = [
-    { icon: 'bi-laptop', title: 'Cross Platform', description: 'Runs on Windows, macOS, and Linux' },
-    { icon: 'bi-phone', title: 'Responsive Design', description: 'Adapts to different screen sizes' },
-    { icon: 'bi-shield-check', title: 'Secure', description: 'Built with security best practices' },
-    { icon: 'bi-lightning', title: 'Fast Performance', description: 'Optimized for speed and efficiency' },
-    { icon: 'bi-palette', title: 'Modern UI', description: 'Beautiful and intuitive interface' },
-    { icon: 'bi-gear', title: 'Configurable', description: 'Customizable settings and preferences' }
+    { icon: 'bi-image', title: 'AI图片生成', description: '支持多种模型生成高质量图片' },
+    { icon: 'bi-camera-video', title: 'AI视频生成', description: '文生视频、图生视频多种模式' },
+    { icon: 'bi-person-video2', title: '动作模仿', description: '单图视频驱动技术' },
+    { icon: 'bi-laptop', title: '跨平台', description: '支持 Windows、macOS 和 Linux' },
+    { icon: 'bi-shield-check', title: '安全可靠', description: '本地存储密钥，保护隐私' },
+    { icon: 'bi-lightning', title: '快速高效', description: '优化的性能和用户体验' }
   ];
 
   return (
@@ -23,7 +23,7 @@ function About({ electronInfo }) {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">
           <i className="bi bi-info-circle me-2"></i>
-          About
+          关于
         </h2>
         <Badge bg="primary">v1.0.0</Badge>
       </div>
@@ -36,20 +36,19 @@ function About({ electronInfo }) {
               <div className="mb-4">
                 <i className="bi bi-lightning-charge display-1 text-primary"></i>
               </div>
-              <h3 className="mb-3">Electron React Bootstrap App</h3>
+              <h3 className="mb-3">火山AI创作工坊</h3>
               <p className="lead text-muted mb-4">
-                A modern desktop application template built with the latest web technologies.
-                This app demonstrates the power of combining Electron, React, and Bootstrap
-                to create beautiful, cross-platform desktop applications.
+                基于火山引擎强大的AI能力打造的智能创作平台。集成图片生成、视频生成、动作模仿等多种AI创作工具，
+                为创作者提供便捷高效的创作体验。使用Electron + React技术栈构建，支持跨平台运行。
               </p>
               <div className="d-flex justify-content-center gap-2">
-                <Button variant="outline-primary">
-                  <i className="bi bi-github me-1"></i>
-                  View Source
+                <Button variant="outline-primary" href="https://www.volcengine.com/" target="_blank">
+                  <i className="bi bi-globe me-1"></i>
+                  火山引擎官网
                 </Button>
-                <Button variant="outline-success">
-                  <i className="bi bi-download me-1"></i>
-                  Download
+                <Button variant="outline-success" href="https://console.volcengine.com/ark" target="_blank">
+                  <i className="bi bi-key me-1"></i>
+                  获取API密钥
                 </Button>
               </div>
             </Card.Body>
@@ -63,7 +62,7 @@ function About({ electronInfo }) {
           <Card className="feature-card">
             <Card.Header className="bg-primary text-white">
               <i className="bi bi-stack me-2"></i>
-              Technologies Used
+              技术栈
             </Card.Header>
             <Card.Body>
               <Row>
@@ -92,7 +91,7 @@ function About({ electronInfo }) {
           <Card className="feature-card">
             <Card.Header className="bg-success text-white">
               <i className="bi bi-star me-2"></i>
-              Key Features
+              核心功能
             </Card.Header>
             <Card.Body>
               <Row>
@@ -117,24 +116,24 @@ function About({ electronInfo }) {
           <Card className="feature-card">
             <Card.Header className="bg-info text-white">
               <i className="bi bi-pc-display me-2"></i>
-              System Information
+              系统信息
             </Card.Header>
             <Card.Body>
               <div className="version-info">
                 <div className="mb-2">
-                  <strong>Platform:</strong> {electronInfo.platform || 'Unknown'}
+                  <strong>运行平台:</strong> {electronInfo.platform || '未知'}
                 </div>
                 <div className="mb-2">
-                  <strong>Environment:</strong> {electronInfo.isElectron ? 'Electron Desktop' : 'Web Browser'}
+                  <strong>运行环境:</strong> {electronInfo.isElectron ? 'Electron 桌面应用' : '网页浏览器'}
                 </div>
                 <div className="mb-2">
-                  <strong>Node.js:</strong> <span id="node-version">Loading...</span>
+                  <strong>Node.js 版本:</strong> <span id="node-version">加载中...</span>
                 </div>
                 <div className="mb-2">
-                  <strong>Chrome:</strong> <span id="chrome-version">Loading...</span>
+                  <strong>Chrome 版本:</strong> <span id="chrome-version">加载中...</span>
                 </div>
                 <div className="mb-2">
-                  <strong>Electron:</strong> <span id="electron-version">Loading...</span>
+                  <strong>Electron 版本:</strong> <span id="electron-version">加载中...</span>
                 </div>
               </div>
             </Card.Body>
@@ -145,35 +144,35 @@ function About({ electronInfo }) {
           <Card className="feature-card">
             <Card.Header className="bg-warning text-dark">
               <i className="bi bi-person-circle me-2"></i>
-              Credits & License
+              开发者与许可
             </Card.Header>
             <Card.Body>
               <div className="mb-3">
-                <h6>Created by</h6>
-                <p className="text-muted">Your Development Team</p>
+                <h6>开发团队</h6>
+                <p className="text-muted">AI创作工具开发团队</p>
               </div>
               
               <div className="mb-3">
-                <h6>License</h6>
-                <p className="text-muted">MIT License - Free to use and modify</p>
+                <h6>开源协议</h6>
+                <p className="text-muted">MIT License - 免费使用和修改</p>
               </div>
               
               <div className="mb-3">
-                <h6>Support</h6>
+                <h6>技术支持</h6>
                 <p className="text-muted">
-                  For support and documentation, visit our 
-                  <a href="#" className="text-decoration-none"> GitHub repository</a>
+                  如需技术支持，请访问
+                  <a href="https://www.volcengine.com/docs" target="_blank" rel="noopener noreferrer" className="text-decoration-none"> 火山引擎文档中心</a>
                 </p>
               </div>
 
               <div className="text-center mt-4">
                 <Button variant="outline-primary" size="sm" className="me-2">
                   <i className="bi bi-bug me-1"></i>
-                  Report Bug
+                  报告问题
                 </Button>
                 <Button variant="outline-success" size="sm">
                   <i className="bi bi-lightbulb me-1"></i>
-                  Request Feature
+                  功能建议
                 </Button>
               </div>
             </Card.Body>

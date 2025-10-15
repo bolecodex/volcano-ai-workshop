@@ -290,6 +290,308 @@ function setupIpcHandlers() {
       };
     }
   });
+
+  // TOS Upload IPC handler
+  ipcMain.handle('upload-to-tos', async (event, fileData, config) => {
+    console.log('📤 IPC: Uploading file to TOS...', {
+      fileName: fileData.name,
+      fileSize: fileData.size
+    });
+    try {
+      const result = await apiService.uploadToTOS(fileData, config);
+      console.log('✅ IPC: File upload completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in upload-to-tos:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // Motion Imitation IPC handlers
+  ipcMain.handle('submit-motion-imitation-task', async (event, requestData) => {
+    console.log('🎭 IPC: Submitting motion imitation task...');
+    try {
+      const result = await apiService.submitMotionImitationTask(requestData);
+      console.log('✅ IPC: Motion imitation task submission completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-motion-imitation-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-motion-imitation-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying motion imitation task:', requestData.task_id);
+    try {
+      const result = await apiService.queryMotionImitationTask(requestData);
+      console.log('✅ IPC: Motion imitation task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-motion-imitation-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 即梦AI 4.0 IPC handlers
+  ipcMain.handle('submit-jimeng40-task', async (event, requestData) => {
+    console.log('🎨 IPC: Submitting Jimeng 4.0 task...');
+    try {
+      const result = await apiService.submitJimeng40Task(requestData);
+      console.log('✅ IPC: Jimeng 4.0 task submission completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-jimeng40-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-jimeng40-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying Jimeng 4.0 task:', requestData.task_id);
+    try {
+      const result = await apiService.queryJimeng40Task(requestData);
+      console.log('✅ IPC: Jimeng 4.0 task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-jimeng40-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 即梦文生图 3.1 IPC handlers
+  ipcMain.handle('submit-jimeng31-task', async (event, requestData) => {
+    console.log('🎨 IPC: Submitting Jimeng 3.1 task');
+    try {
+      const result = await apiService.submitJimeng31Task(requestData);
+      console.log('✅ IPC: Jimeng 3.1 task submitted');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-jimeng31-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-jimeng31-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying Jimeng 3.1 task:', requestData.task_id);
+    try {
+      const result = await apiService.queryJimeng31Task(requestData);
+      console.log('✅ IPC: Jimeng 3.1 task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-jimeng31-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 即梦 3.0 Pro 视频生成 IPC handlers
+  ipcMain.handle('submit-jimeng30pro-video-task', async (event, requestData) => {
+    console.log('🎬 IPC: Submitting Jimeng 3.0 Pro video task');
+    try {
+      const result = await apiService.submitJimeng30ProVideoTask(requestData);
+      console.log('✅ IPC: Jimeng 3.0 Pro video task submitted');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-jimeng30pro-video-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-jimeng30pro-video-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying Jimeng 3.0 Pro video task:', requestData.task_id);
+    try {
+      const result = await apiService.queryJimeng30ProVideoTask(requestData);
+      console.log('✅ IPC: Jimeng 3.0 Pro video task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-jimeng30pro-video-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 即梦图生图3.0智能参考 IPC handlers
+  ipcMain.handle('submit-jimeng-i2i30-task', async (event, requestData) => {
+    console.log('🎨 IPC: Submitting Jimeng I2I 3.0 task');
+    try {
+      const result = await apiService.submitJimengI2I30Task(requestData);
+      console.log('✅ IPC: Jimeng I2I 3.0 task submitted');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-jimeng-i2i30-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-jimeng-i2i30-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying Jimeng I2I 3.0 task:', requestData.task_id);
+    try {
+      const result = await apiService.queryJimengI2I30Task(requestData);
+      console.log('✅ IPC: Jimeng I2I 3.0 task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-jimeng-i2i30-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 图像向量化 IPC handler
+  ipcMain.handle('image-embedding', async (event, requestData) => {
+    console.log('🔍 IPC: Creating image embedding...');
+    try {
+      const result = await apiService.imageEmbedding(requestData);
+      console.log('✅ IPC: Image embedding completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in image-embedding:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 向量数据库 - 多模态检索 IPC handler
+  ipcMain.handle('search-by-multimodal', async (event, requestData) => {
+    console.log('🔍 IPC: Multi-modal search...');
+    try {
+      const result = await apiService.searchByMultiModal(requestData);
+      console.log('✅ IPC: Multi-modal search completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in search-by-multimodal:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // TOS - 生成预签名 URL IPC handler
+  ipcMain.handle('get-tos-presigned-url', async (event, requestData) => {
+    console.log('🔗 IPC: Getting TOS pre-signed URL...');
+    try {
+      const result = await apiService.getTosPreSignedUrl(requestData);
+      console.log('✅ IPC: TOS pre-signed URL completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in get-tos-presigned-url:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 向量数据库 - 数据写入 IPC handler
+  ipcMain.handle('upsert-vector-data', async (event, requestData) => {
+    console.log('📝 IPC: Upserting vector data...');
+    try {
+      const result = await apiService.upsertVectorData(requestData);
+      console.log('✅ IPC: Vector data upsert completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in upsert-vector-data:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // 向量数据库 - 向量化计算 IPC handler
+  ipcMain.handle('compute-embedding', async (event, requestData) => {
+    console.log('🧮 IPC: Computing embedding...');
+    try {
+      const result = await apiService.computeEmbedding(requestData);
+      console.log('✅ IPC: Embedding computation completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in compute-embedding:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
   
   console.log('✅ IPC handlers setup completed');
 }

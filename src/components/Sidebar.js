@@ -3,11 +3,13 @@ import { Nav } from 'react-bootstrap';
 
 function Sidebar({ activeTab, setActiveTab }) {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'bi-speedometer2' },
+    { id: 'dashboard', label: '工作台', icon: 'bi-speedometer2' },
     { id: 'image-generator', label: 'AI 图片生成', icon: 'bi-image' },
     { id: 'video-generator', label: 'AI 视频生成', icon: 'bi-camera-video' },
-    { id: 'settings', label: 'Settings', icon: 'bi-gear' },
-    { id: 'about', label: 'About', icon: 'bi-info-circle' }
+    { id: 'motion-imitation', label: '动作模仿', icon: 'bi-person-video2' },
+    { id: 'smart-search', label: '智能搜索', icon: 'bi-search-heart' },
+    { id: 'settings', label: '设置', icon: 'bi-gear' },
+    { id: 'about', label: '关于', icon: 'bi-info-circle' }
   ];
 
   return (
@@ -15,7 +17,7 @@ function Sidebar({ activeTab, setActiveTab }) {
       <div className="p-3">
         <h5 className="text-white mb-3">
           <i className="bi bi-list me-2"></i>
-          Navigation
+          导航菜单
         </h5>
         <Nav className="flex-column">
           {menuItems.map((item) => (
@@ -41,8 +43,8 @@ function Sidebar({ activeTab, setActiveTab }) {
             <i className="bi bi-person text-white"></i>
           </div>
           <div>
-            <div className="text-white small fw-bold">User</div>
-            <div className="text-muted small">Administrator</div>
+            <div className="text-white small fw-bold">用户</div>
+            <div className="text-muted small">管理员</div>
           </div>
         </div>
       </div>

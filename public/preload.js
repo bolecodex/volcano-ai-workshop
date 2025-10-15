@@ -34,6 +34,97 @@ contextBridge.exposeInMainWorld('electronAPI', {
     console.log('🗑️ Preload: Calling delete-video-task via IPC');
     return ipcRenderer.invoke('delete-video-task', { taskId, apiKey });
   },
+
+  // Motion Imitation API calls via IPC
+  submitMotionImitationTask: (requestData) => {
+    console.log('🎭 Preload: Calling submit-motion-imitation-task via IPC');
+    return ipcRenderer.invoke('submit-motion-imitation-task', requestData);
+  },
+
+  queryMotionImitationTask: (requestData) => {
+    console.log('🔍 Preload: Calling query-motion-imitation-task via IPC');
+    return ipcRenderer.invoke('query-motion-imitation-task', requestData);
+  },
+
+  // 即梦AI 4.0 API calls via IPC
+  submitJimeng40Task: (requestData) => {
+    console.log('🎨 Preload: Calling submit-jimeng40-task via IPC');
+    return ipcRenderer.invoke('submit-jimeng40-task', requestData);
+  },
+
+  queryJimeng40Task: (requestData) => {
+    console.log('🔍 Preload: Calling query-jimeng40-task via IPC');
+    return ipcRenderer.invoke('query-jimeng40-task', requestData);
+  },
+
+  // 即梦文生图 3.1 API calls via IPC
+  submitJimeng31Task: (requestData) => {
+    console.log('🎨 Preload: Calling submit-jimeng31-task via IPC');
+    return ipcRenderer.invoke('submit-jimeng31-task', requestData);
+  },
+
+  queryJimeng31Task: (requestData) => {
+    console.log('🔍 Preload: Calling query-jimeng31-task via IPC');
+    return ipcRenderer.invoke('query-jimeng31-task', requestData);
+  },
+
+  // 即梦AI 3.0 Pro 视频生成 API calls via IPC
+  submitJimeng30ProVideoTask: (requestData) => {
+    console.log('🎬 Preload: Calling submit-jimeng30pro-video-task via IPC');
+    return ipcRenderer.invoke('submit-jimeng30pro-video-task', requestData);
+  },
+
+  queryJimeng30ProVideoTask: (requestData) => {
+    console.log('🔍 Preload: Calling query-jimeng30pro-video-task via IPC');
+    return ipcRenderer.invoke('query-jimeng30pro-video-task', requestData);
+  },
+
+  // 即梦图生图3.0智能参考 API calls via IPC
+  submitJimengI2I30Task: (requestData) => {
+    console.log('🎨 Preload: Calling submit-jimeng-i2i30-task via IPC');
+    return ipcRenderer.invoke('submit-jimeng-i2i30-task', requestData);
+  },
+
+  queryJimengI2I30Task: (requestData) => {
+    console.log('🔍 Preload: Calling query-jimeng-i2i30-task via IPC');
+    return ipcRenderer.invoke('query-jimeng-i2i30-task', requestData);
+  },
+
+  // 图像向量化 API calls via IPC
+  imageEmbedding: (requestData) => {
+    console.log('🔍 Preload: Calling image-embedding via IPC');
+    return ipcRenderer.invoke('image-embedding', requestData);
+  },
+
+  // 向量数据库 - 多模态检索 API calls via IPC
+  searchByMultiModal: (requestData) => {
+    console.log('🔍 Preload: Calling search-by-multimodal via IPC');
+    return ipcRenderer.invoke('search-by-multimodal', requestData);
+  },
+
+  // TOS - 生成预签名 URL
+  getTosPreSignedUrl: (requestData) => {
+    console.log('🔗 Preload: Calling get-tos-presigned-url via IPC');
+    return ipcRenderer.invoke('get-tos-presigned-url', requestData);
+  },
+
+  // 向量数据库 - 数据写入 API calls via IPC
+  upsertVectorData: (requestData) => {
+    console.log('📝 Preload: Calling upsert-vector-data via IPC');
+    return ipcRenderer.invoke('upsert-vector-data', requestData);
+  },
+
+  // 向量数据库 - 向量化计算 API calls via IPC
+  computeEmbedding: (requestData) => {
+    console.log('🧮 Preload: Calling compute-embedding via IPC');
+    return ipcRenderer.invoke('compute-embedding', requestData);
+  },
+
+  // TOS Upload
+  uploadToTOS: (fileData, config) => {
+    console.log('📤 Preload: Calling upload-to-tos via IPC');
+    return ipcRenderer.invoke('upload-to-tos', fileData, config);
+  },
   
   // App info
   getAppInfo: () => {

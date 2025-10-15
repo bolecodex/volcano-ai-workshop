@@ -24,9 +24,10 @@ function VideoGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
   
+  
   // 创建任务相关状态
   const [taskForm, setTaskForm] = useState({
-    model: 'doubao-seedance-1-0-pro-250528',
+    model: 'jimeng_ti2v_v30_pro', // 默认选择即梦3.0 Pro
     generationType: 'text-to-video', // 'text-to-video' 或 'image-to-video'
     textPrompt: '',
     imageFile: null,
@@ -66,31 +67,44 @@ function VideoGenerator() {
   const modelConfig = {
     'text-to-video': [
       { 
+        value: 'jimeng_ti2v_v30_pro', 
+        label: '即梦视频 3.0 Pro ⭐', 
+        description: '1080P高清，多镜头叙事，专业级质感',
+        recommended: true,
+        apiType: 'jimeng30pro', // 标识使用即梦3.0 Pro API
+        supportedRoles: ['first_frame'],
+        requireAccessKey: true // 需要AccessKey认证
+      },
+      { 
         value: 'doubao-seedance-1-0-pro-250528', 
         label: 'Seedance 1.0 Pro', 
         description: '高质量文生视频，支持复杂场景',
-        recommended: true,
+        apiType: 'ark', // 标识使用火山方舟API
         supportedRoles: ['first_frame'] // 支持首帧图生视频
       },
       { 
         value: 'doubao-seedance-1-0-lite-t2v', 
         label: 'Seedance 1.0 Lite T2V', 
         description: '轻量级文生视频，速度更快',
-        supportedRoles: [] // 仅文生视频
-      },
-      { 
-        value: 'wan2-1-14b-t2v', 
-        label: 'Wan2.1 14B T2V', 
-        description: '高质量文生视频模型',
+        apiType: 'ark',
         supportedRoles: [] // 仅文生视频
       }
     ],
     'image-to-video': [
       { 
+        value: 'jimeng_ti2v_v30_pro', 
+        label: '即梦视频 3.0 Pro ⭐', 
+        description: '1080P高清图生视频（首帧），专业级质感',
+        recommended: true,
+        apiType: 'jimeng30pro',
+        supportedRoles: ['first_frame'],
+        requireAccessKey: true
+      },
+      { 
         value: 'doubao-seedance-1-0-pro-250528', 
         label: 'Seedance 1.0 Pro', 
         description: '支持首帧图生视频，效果优秀',
-        recommended: true,
+        apiType: 'ark',
         supportedRoles: ['first_frame'],
         note: '推荐用于首帧图生视频'
       },
@@ -98,20 +112,9 @@ function VideoGenerator() {
         value: 'doubao-seedance-1-0-lite-i2v', 
         label: 'Seedance 1.0 Lite I2V', 
         description: '多功能图生视频模型',
+        apiType: 'ark',
         supportedRoles: ['first_frame', 'last_frame', 'reference_image'],
         note: '支持首帧、首尾帧、参考图生视频'
-      },
-      { 
-        value: 'wan2-1-14b-i2v', 
-        label: 'Wan2.1 14B I2V', 
-        description: '首帧图生视频专用',
-        supportedRoles: ['first_frame']
-      },
-      { 
-        value: 'wan2-1-14b-flf2v', 
-        label: 'Wan2.1 14B FLF2V', 
-        description: '首尾帧图生视频专用',
-        supportedRoles: ['first_frame', 'last_frame']
       }
     ]
   };
@@ -144,8 +147,8 @@ function VideoGenerator() {
   // 处理生成类型变化
   const handleGenerationTypeChange = (type) => {
     const defaultModels = {
-      'text-to-video': 'doubao-seedance-1-0-pro-250528',
-      'image-to-video': 'doubao-seedance-1-0-pro-250528'
+      'text-to-video': 'jimeng_ti2v_v30_pro',
+      'image-to-video': 'jimeng_ti2v_v30_pro'
     };
     
     setTaskForm(prev => ({
@@ -202,11 +205,24 @@ function VideoGenerator() {
     try {
       setIsLoading(true);
       
-      // 检查API Key
-      const apiKey = storage.getApiKey();
-      if (!apiKey) {
-        showAlert('warning', '请先在设置页面配置API Key');
-        return;
+      // 获取当前选择的模型配置
+      const currentModelConfig = modelConfig[taskForm.generationType].find(m => m.value === taskForm.model);
+      
+      // 根据模型类型检查认证
+      if (currentModelConfig?.apiType === 'jimeng30pro') {
+        // 即梦3.0 Pro 需要 AccessKey
+        const accessKeys = storage.getAccessKeys();
+        if (!accessKeys.accessKeyId || !accessKeys.secretAccessKey) {
+          showAlert('warning', '即梦3.0 Pro需要配置Access Key ID和Secret Access Key，请在设置页面配置访问密钥');
+          return;
+        }
+      } else {
+        // 其他模型需要 API Key
+        const apiKey = storage.getApiKey();
+        if (!apiKey) {
+          showAlert('warning', '请先在设置页面配置API Key');
+          return;
+        }
       }
       
       // 验证输入
@@ -224,164 +240,186 @@ function VideoGenerator() {
         }
       }
 
-      // 构建请求内容
-      const content = [];
-      
-      // 添加文本内容
-      if (taskForm.textPrompt.trim()) {
-        let textContent = taskForm.textPrompt.trim();
-        
-        // 添加参数到文本提示词
-        const params = [];
-        if (taskForm.resolution !== '720p') params.push(`--resolution ${taskForm.resolution}`);
-        if (taskForm.ratio !== '16:9') params.push(`--ratio ${taskForm.ratio}`);
-        if (taskForm.duration !== 5) params.push(`--duration ${taskForm.duration}`);
-        if (taskForm.framespersecond !== 24) params.push(`--fps ${taskForm.framespersecond}`);
-        if (taskForm.watermark) params.push('--watermark true');
-        if (taskForm.seed !== -1) params.push(`--seed ${taskForm.seed}`);
-        if (taskForm.camerafixed) params.push('--camerafixed true');
-        
-        if (params.length > 0) {
-          textContent += ' ' + params.join(' ');
-        }
-        
-        content.push({
-          type: 'text',
-          text: textContent
-        });
-      }
-      
-      // 添加图片内容（仅在图生视频模式下）
-      if (taskForm.generationType === 'image-to-video') {
-        if (taskForm.useImageFile && taskForm.imageFile) {
-          const base64Image = await fileToBase64(taskForm.imageFile);
-          
-          // 根据模型和角色决定是否添加role字段
-          const imageContent = {
-            type: 'image_url',
-            image_url: {
-              url: base64Image
-            }
-          };
-          
-          // 根据API文档和模型配置智能设置role字段
-          const currentModelConfig = modelConfig[taskForm.generationType].find(m => m.value === taskForm.model);
-          
-          if (currentModelConfig && currentModelConfig.supportedRoles.includes(taskForm.imageRole)) {
-            // 模型支持当前角色，添加role字段
-            imageContent.role = taskForm.imageRole;
-            console.log('✅ 为模型添加role字段:', {
-              model: taskForm.model,
-              role: taskForm.imageRole,
-              supportedRoles: currentModelConfig.supportedRoles
-            });
-          } else {
-            console.log('⚠️ 模型不支持当前role或role为可选:', {
-              model: taskForm.model,
-              role: taskForm.imageRole,
-              supportedRoles: currentModelConfig?.supportedRoles || []
-            });
-          }
-          
-          content.push(imageContent);
-        } else if (!taskForm.useImageFile && taskForm.imageUrl.trim()) {
-          const imageContent = {
-            type: 'image_url',
-            image_url: {
-              url: taskForm.imageUrl.trim()
-            }
-          };
-          
-          // 根据API文档和模型配置智能设置role字段
-          const currentModelConfig = modelConfig[taskForm.generationType].find(m => m.value === taskForm.model);
-          
-          if (currentModelConfig && currentModelConfig.supportedRoles.includes(taskForm.imageRole)) {
-            // 模型支持当前角色，添加role字段
-            imageContent.role = taskForm.imageRole;
-            console.log('✅ 为模型添加role字段 (URL):', {
-              model: taskForm.model,
-              role: taskForm.imageRole,
-              supportedRoles: currentModelConfig.supportedRoles
-            });
-          } else {
-            console.log('⚠️ 模型不支持当前role或role为可选 (URL):', {
-              model: taskForm.model,
-              role: taskForm.imageRole,
-              supportedRoles: currentModelConfig?.supportedRoles || []
-            });
-          }
-          
-          content.push(imageContent);
-        }
-      }
-      
-      if (content.length === 0) {
-        showAlert('warning', '请提供有效的输入内容');
-        return;
-      }
-      
-      // 构建请求体
-      const requestData = {
-        model: taskForm.model,
-        content: content,
-        apiKey: apiKey
-      };
-      
-      if (taskForm.callbackUrl.trim()) {
-        requestData.callback_url = taskForm.callbackUrl.trim();
-      }
-      
-      if (taskForm.returnLastFrame) {
-        requestData.return_last_frame = true;
-      }
-      
-      // 使用IPC发送请求
+      // 根据模型类型调用不同的API
       let result;
-      console.log('🔍 环境检测:', {
-        hasElectronAPI: !!window.electronAPI,
-        userAgent: navigator.userAgent,
-        isElectron: window.electronAPI?.isElectron || false
-      });
-
-      // 详细的请求日志
-      console.log('📋 请求参数详情:', {
-        generationType: taskForm.generationType,
-        model: taskForm.model,
-        contentLength: content.length,
-        content: content,
-        requestData: {
+      
+      if (currentModelConfig?.apiType === 'jimeng30pro') {
+        // ========== 即梦3.0 Pro API ==========
+        const accessKeys = storage.getAccessKeys();
+        
+        // 构建即梦3.0 Pro请求数据
+        const jimengRequestData = {
+          accessKeyId: accessKeys.accessKeyId,
+          secretAccessKey: accessKeys.secretAccessKey,
+          frames: taskForm.duration === 5 ? 121 : 241, // 5秒=121帧, 10秒=241帧
+          aspect_ratio: taskForm.ratio
+        };
+        
+        // 添加提示词
+        if (taskForm.textPrompt.trim()) {
+          jimengRequestData.prompt = taskForm.textPrompt.trim();
+        }
+        
+        // 添加种子值
+        if (taskForm.seed !== -1) {
+          jimengRequestData.seed = taskForm.seed;
+        }
+        
+        // 添加图片（如果是图生视频）
+        if (taskForm.generationType === 'image-to-video') {
+          if (taskForm.useImageFile && taskForm.imageFile) {
+            // 使用 base64
+            const base64String = await fileToBase64ForJimeng(taskForm.imageFile);
+            jimengRequestData.binary_data_base64 = [base64String];
+          } else if (!taskForm.useImageFile && taskForm.imageUrl.trim()) {
+            // 使用 URL
+            jimengRequestData.image_urls = [taskForm.imageUrl.trim()];
+          }
+        }
+        
+        console.log('📤 即梦3.0 Pro请求:', {
+          model: taskForm.model,
+          hasPrompt: !!jimengRequestData.prompt,
+          hasImage: !!(jimengRequestData.binary_data_base64 || jimengRequestData.image_urls),
+          frames: jimengRequestData.frames,
+          aspect_ratio: jimengRequestData.aspect_ratio
+        });
+        
+        if (window.electronAPI) {
+          result = await window.electronAPI.submitJimeng30ProVideoTask(jimengRequestData);
+          
+          // 即梦3.0 Pro需要额外处理任务ID格式
+          if (result.success) {
+            const taskId = result.data.task_id;
+            
+            // 转换为统一格式
+            result.data = {
+              id: taskId,
+              task_id: taskId,
+              status: 'in_queue',
+              model: taskForm.model,
+              apiType: 'jimeng30pro'
+            };
+            
+            // 保存到本地存储
+            const taskInfo = {
+              id: taskId,
+              task_id: taskId,
+              model: taskForm.model,
+              status: 'in_queue',
+              apiType: 'jimeng30pro',
+              prompt: taskForm.textPrompt,
+              generationType: taskForm.generationType,
+              frames: jimengRequestData.frames,
+              aspect_ratio: jimengRequestData.aspect_ratio
+            };
+            storage.saveJimeng30ProTask(taskInfo);
+            console.log('✅ 即梦3.0 Pro任务已保存到本地存储:', taskId);
+            
+            // 开始轮询查询任务状态
+            pollJimeng30ProTaskInline(taskId);
+          }
+        } else {
+          showAlert('warning', '即梦3.0 Pro功能需要在Electron桌面应用中使用');
+          return;
+        }
+      } else {
+        // ========== 火山方舟 API ==========
+        const apiKey = storage.getApiKey();
+        const content = [];
+        
+        // 添加文本内容
+        if (taskForm.textPrompt.trim()) {
+          let textContent = taskForm.textPrompt.trim();
+          
+          // 添加参数到文本提示词
+          const params = [];
+          if (taskForm.resolution !== '720p') params.push(`--resolution ${taskForm.resolution}`);
+          if (taskForm.ratio !== '16:9') params.push(`--ratio ${taskForm.ratio}`);
+          if (taskForm.duration !== 5) params.push(`--duration ${taskForm.duration}`);
+          if (taskForm.framespersecond !== 24) params.push(`--fps ${taskForm.framespersecond}`);
+          if (taskForm.watermark) params.push('--watermark true');
+          if (taskForm.seed !== -1) params.push(`--seed ${taskForm.seed}`);
+          if (taskForm.camerafixed) params.push('--camerafixed true');
+          
+          if (params.length > 0) {
+            textContent += ' ' + params.join(' ');
+          }
+          
+          content.push({
+            type: 'text',
+            text: textContent
+          });
+        }
+        
+        // 添加图片内容（仅在图生视频模式下）
+        if (taskForm.generationType === 'image-to-video') {
+          if (taskForm.useImageFile && taskForm.imageFile) {
+            const base64Image = await fileToBase64(taskForm.imageFile);
+            
+            const imageContent = {
+              type: 'image_url',
+              image_url: {
+                url: base64Image
+              }
+            };
+            
+            if (currentModelConfig && currentModelConfig.supportedRoles.includes(taskForm.imageRole)) {
+              imageContent.role = taskForm.imageRole;
+            }
+            
+            content.push(imageContent);
+          } else if (!taskForm.useImageFile && taskForm.imageUrl.trim()) {
+            const imageContent = {
+              type: 'image_url',
+              image_url: {
+                url: taskForm.imageUrl.trim()
+              }
+            };
+            
+            if (currentModelConfig && currentModelConfig.supportedRoles.includes(taskForm.imageRole)) {
+              imageContent.role = taskForm.imageRole;
+            }
+            
+            content.push(imageContent);
+          }
+        }
+        
+        if (content.length === 0) {
+          showAlert('warning', '请提供有效的输入内容');
+          return;
+        }
+        
+        // 构建请求体
+        const requestData = {
           model: taskForm.model,
           content: content,
-          apiKey: apiKey ? '***已配置***' : '未配置',
-          callback_url: taskForm.callbackUrl.trim() || '未设置',
-          return_last_frame: taskForm.returnLastFrame
-        }
-      });
-      
-      if (window.electronAPI) {
-        // Electron环境，使用IPC
-        console.log('🖥️ 使用Electron IPC通信');
-        result = await window.electronAPI.createVideoTask(requestData);
-      } else {
-        // Web环境，使用HTTP请求
-        console.log('🌐 使用Web HTTP请求');
-        showAlert('warning', '检测到Web环境，请使用Electron桌面应用以获得最佳体验');
+          apiKey: apiKey
+        };
         
-        const response = await fetch('/api/video/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify(requestData)
+        if (taskForm.callbackUrl.trim()) {
+          requestData.callback_url = taskForm.callbackUrl.trim();
+        }
+        
+        if (taskForm.returnLastFrame) {
+          requestData.return_last_frame = true;
+        }
+        
+        console.log('📋 火山方舟请求:', {
+          model: taskForm.model,
+          contentLength: content.length
         });
         
-        const data = await response.json();
-        result = response.ok ? { success: true, data } : { success: false, error: data.error };
+        if (window.electronAPI) {
+          result = await window.electronAPI.createVideoTask(requestData);
+        } else {
+          showAlert('warning', '检测到Web环境，请使用Electron桌面应用以获得最佳体验');
+          return;
+        }
       }
       
       if (result.success) {
-        showAlert('success', `视频生成任务创建成功！任务ID: ${result.data.id}`);
+        showAlert('success', `视频生成任务创建成功！任务ID: ${result.data.id || result.data.task_id}`);
         // 重置表单
         setTaskForm(prev => ({
           ...prev,
@@ -417,67 +455,116 @@ function VideoGenerator() {
     try {
       setIsLoading(true);
       
-      // 检查API Key
+      // 获取本地存储的即梦 3.0 Pro 任务
+      let jimeng30ProTasks = storage.getJimeng30ProTasks();
+      
+      // 检查API Key（用于火山方舟任务）
       const apiKey = storage.getApiKey();
-      if (!apiKey) {
-        showAlert('warning', '请先在设置页面配置API Key');
-        return;
-      }
+      let arkTasks = [];
       
-      const queryParams = {
-        page_num: taskQuery.pageNum,
-        page_size: taskQuery.pageSize,
-        status: taskQuery.status,
-        task_ids: taskQuery.taskIds,
-        model: taskQuery.model
-      };
-      
-      // 使用IPC或HTTP请求
-      let result;
-      if (window.electronAPI) {
-        // Electron环境，使用IPC
-        result = await window.electronAPI.getVideoTasks(queryParams, apiKey);
-      } else {
-        // Web环境，使用HTTP请求
-        const params = new URLSearchParams();
-        if (queryParams.page_num) params.append('page_num', queryParams.page_num);
-        if (queryParams.page_size) params.append('page_size', queryParams.page_size);
-        if (queryParams.status) params.append('filter.status', queryParams.status);
-        if (queryParams.task_ids) params.append('filter.task_ids', queryParams.task_ids);
-        if (queryParams.model) params.append('filter.model', queryParams.model);
-        
-        const response = await fetch(`/api/video/tasks?${params.toString()}`, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`
-          }
-        });
-        const data = await response.json();
-        result = response.ok ? { success: true, data } : { success: false, error: data.error };
-      }
-      
-      if (result.success) {
-        const data = result.data;
-        setTasks(data.items || []);
-        
-        // 计算统计信息
-        const stats = {
-          total: data.total || 0,
-          queued: 0,
-          running: 0,
-          succeeded: 0,
-          failed: 0
+      if (apiKey) {
+        const queryParams = {
+          page_num: taskQuery.pageNum,
+          page_size: taskQuery.pageSize,
+          status: taskQuery.status,
+          task_ids: taskQuery.taskIds,
+          model: taskQuery.model
         };
         
-        data.items?.forEach(task => {
-          if (stats[task.status] !== undefined) {
-            stats[task.status]++;
-          }
-        });
+        // 使用IPC或HTTP请求获取火山方舟任务
+        let result;
+        if (window.electronAPI) {
+          // Electron环境，使用IPC
+          result = await window.electronAPI.getVideoTasks(queryParams, apiKey);
+        } else {
+          // Web环境，使用HTTP请求
+          const params = new URLSearchParams();
+          if (queryParams.page_num) params.append('page_num', queryParams.page_num);
+          if (queryParams.page_size) params.append('page_size', queryParams.page_size);
+          if (queryParams.status) params.append('filter.status', queryParams.status);
+          if (queryParams.task_ids) params.append('filter.task_ids', queryParams.task_ids);
+          if (queryParams.model) params.append('filter.model', queryParams.model);
+          
+          const response = await fetch(`/api/video/tasks?${params.toString()}`, {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`
+            }
+          });
+          const data = await response.json();
+          result = response.ok ? { success: true, data } : { success: false, error: data.error };
+        }
         
-        setTaskStats(stats);
-      } else {
-        showAlert('danger', `获取任务列表失败: ${result.error?.message || result.error || '未知错误'}`);
+        if (result.success) {
+          arkTasks = result.data.items || [];
+        } else {
+          console.error('获取火山方舟任务失败:', result.error);
+        }
       }
+      
+      // 应用筛选条件到即梦 3.0 Pro 任务
+      if (taskQuery.status) {
+        // 映射即梦状态到火山方舟状态格式
+        const statusMap = {
+          'in_queue': 'queued',
+          'generating': 'running',
+          'done': 'succeeded',
+          'not_found': 'failed',
+          'expired': 'failed'
+        };
+        const mappedStatus = Object.entries(statusMap).find(([k, v]) => v === taskQuery.status)?.[0];
+        if (mappedStatus) {
+          jimeng30ProTasks = jimeng30ProTasks.filter(task => task.status === mappedStatus);
+        } else {
+          jimeng30ProTasks = [];
+        }
+      }
+      
+      if (taskQuery.taskIds) {
+        const searchIds = taskQuery.taskIds.split(',').map(id => id.trim());
+        jimeng30ProTasks = jimeng30ProTasks.filter(task => 
+          searchIds.some(searchId => task.id && task.id.includes(searchId))
+        );
+      }
+      
+      if (taskQuery.model && taskQuery.model !== 'jimeng_ti2v_v30_pro') {
+        jimeng30ProTasks = [];
+      } else if (taskQuery.model === 'jimeng_ti2v_v30_pro') {
+        arkTasks = [];
+      }
+      
+      // 合并任务列表（即梦任务在前）
+      const allTasks = [...jimeng30ProTasks, ...arkTasks];
+      setTasks(allTasks);
+      
+      // 计算统计信息
+      const stats = {
+        total: allTasks.length,
+        queued: 0,
+        running: 0,
+        succeeded: 0,
+        failed: 0
+      };
+      
+      allTasks.forEach(task => {
+        // 映射即梦状态到统计格式
+        let statKey = task.status;
+        if (task.apiType === 'jimeng30pro') {
+          const statusMap = {
+            'in_queue': 'queued',
+            'generating': 'running',
+            'done': 'succeeded',
+            'not_found': 'failed',
+            'expired': 'failed'
+          };
+          statKey = statusMap[task.status] || task.status;
+        }
+        
+        if (stats[statKey] !== undefined) {
+          stats[statKey]++;
+        }
+      });
+      
+      setTaskStats(stats);
     } catch (error) {
       console.error('获取任务列表失败:', error);
       showAlert('danger', `获取任务列表失败: ${error.message}`);
@@ -489,7 +576,54 @@ function VideoGenerator() {
   // 查询单个任务详情
   const fetchTaskDetail = async (taskId) => {
     try {
-      // 检查API Key
+      // 首先检查是否是即梦 3.0 Pro 任务
+      const jimeng30ProTasks = storage.getJimeng30ProTasks();
+      const jimeng30ProTask = jimeng30ProTasks.find(t => t.id === taskId);
+      
+      if (jimeng30ProTask) {
+        // 如果是即梦 3.0 Pro 任务，尝试查询最新状态
+        if (window.electronAPI) {
+          const accessKeys = storage.getAccessKeys();
+          try {
+            const result = await window.electronAPI.queryJimeng30ProVideoTask({
+              task_id: taskId,
+              accessKeyId: accessKeys.accessKeyId,
+              secretAccessKey: accessKeys.secretAccessKey
+            });
+            
+            if (result.success) {
+              // 更新本地存储
+              const updates = {
+                status: result.data.status
+              };
+              if (result.data.video_url) {
+                updates.video_url = result.data.video_url;
+              }
+              storage.updateJimeng30ProTask(taskId, updates);
+              
+              // 显示更新后的任务信息
+              setSelectedTask({ ...jimeng30ProTask, ...updates });
+              setShowTaskModal(true);
+            } else {
+              // 查询失败，显示本地存储的信息
+              setSelectedTask(jimeng30ProTask);
+              setShowTaskModal(true);
+            }
+          } catch (error) {
+            console.error('查询即梦 3.0 Pro 任务失败:', error);
+            // 显示本地存储的信息
+            setSelectedTask(jimeng30ProTask);
+            setShowTaskModal(true);
+          }
+        } else {
+          // 非 Electron 环境，直接显示本地存储的信息
+          setSelectedTask(jimeng30ProTask);
+          setShowTaskModal(true);
+        }
+        return;
+      }
+      
+      // 否则是火山方舟任务
       const apiKey = storage.getApiKey();
       if (!apiKey) {
         showAlert('warning', '请先在设置页面配置API Key');
@@ -531,7 +665,27 @@ function VideoGenerator() {
     }
     
     try {
-      // 检查API Key
+      // 首先检查是否是即梦 3.0 Pro 任务
+      const jimeng30ProTasks = storage.getJimeng30ProTasks();
+      const jimeng30ProTask = jimeng30ProTasks.find(t => t.id === taskId);
+      
+      if (jimeng30ProTask) {
+        // 如果是即梦 3.0 Pro 任务，从本地存储删除
+        const success = storage.deleteJimeng30ProTask(taskId);
+        if (success) {
+          showAlert('success', '任务删除成功');
+          fetchTasks(); // 刷新列表
+          if (selectedTask && selectedTask.id === taskId) {
+            setShowTaskModal(false);
+            setSelectedTask(null);
+          }
+        } else {
+          showAlert('danger', '删除任务失败');
+        }
+        return;
+      }
+      
+      // 否则是火山方舟任务
       const apiKey = storage.getApiKey();
       if (!apiKey) {
         showAlert('warning', '请先在设置页面配置API Key');
@@ -584,11 +738,18 @@ function VideoGenerator() {
   // 获取状态徽章样式
   const getStatusBadge = (status) => {
     const statusMap = {
+      // 火山方舟视频生成状态
       queued: { bg: 'secondary', text: '排队中' },
       running: { bg: 'primary', text: '运行中' },
       succeeded: { bg: 'success', text: '成功' },
       failed: { bg: 'danger', text: '失败' },
-      cancelled: { bg: 'warning', text: '已取消' }
+      cancelled: { bg: 'warning', text: '已取消' },
+      // 即梦 3.0 Pro 状态
+      in_queue: { bg: 'secondary', text: '排队中' },
+      generating: { bg: 'primary', text: '生成中' },
+      done: { bg: 'success', text: '完成' },
+      not_found: { bg: 'danger', text: '未找到' },
+      expired: { bg: 'warning', text: '已过期' }
     };
     
     const statusInfo = statusMap[status] || { bg: 'secondary', text: status };
@@ -601,6 +762,92 @@ function VideoGenerator() {
       fetchTasks();
     }
   }, [activeTab]);
+
+  // ========== 即梦 3.0 Pro 辅助函数 ==========
+  
+  // 将文件转换为 Base64（用于即梦 3.0 Pro）
+  const fileToBase64ForJimeng = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // 移除 data:image/xxx;base64, 前缀，只保留 base64 字符串
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // 轮询查询即梦 3.0 Pro 任务状态（集成版本）
+  const pollJimeng30ProTaskInline = async (taskId, maxAttempts = 60) => {
+    const accessKeys = storage.getAccessKeys();
+    let attempts = 0;
+    
+    const poll = async () => {
+      try {
+        attempts++;
+        
+        if (window.electronAPI) {
+          const result = await window.electronAPI.queryJimeng30ProVideoTask({
+            task_id: taskId,
+            accessKeyId: accessKeys.accessKeyId,
+            secretAccessKey: accessKeys.secretAccessKey
+          });
+          
+          if (result.success) {
+            const status = result.data.status;
+            
+            console.log(`轮询即梦3.0 Pro任务 ${taskId}, 第${attempts}次, 状态: ${status}`);
+            
+            // 更新本地存储的任务状态
+            const updates = {
+              status: status
+            };
+            if (result.data.video_url) {
+              updates.video_url = result.data.video_url;
+            }
+            storage.updateJimeng30ProTask(taskId, updates);
+            
+            if (status === 'done') {
+              if (result.data.video_url) {
+                showAlert('success', `即梦3.0 Pro视频生成完成！任务ID: ${taskId}`);
+              }
+              // 刷新任务列表
+              if (activeTab === 'list') {
+                fetchTasks();
+              }
+              return; // 停止轮询
+            } else if (status === 'not_found' || status === 'expired') {
+              showAlert('danger', `即梦3.0 Pro任务${status === 'not_found' ? '未找到' : '已过期'}，任务ID: ${taskId}`);
+              return; // 停止轮询
+            } else if (status === 'in_queue' || status === 'generating') {
+              // 继续轮询
+              if (attempts < maxAttempts) {
+                setTimeout(poll, 5000); // 5秒后再次查询
+              } else {
+                showAlert('warning', `即梦3.0 Pro任务查询超时，请在任务列表中手动查看。任务ID: ${taskId}`);
+              }
+            }
+          } else {
+            console.error('查询即梦3.0 Pro任务失败:', result.error);
+            if (attempts < maxAttempts) {
+              setTimeout(poll, 5000);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('轮询查询即梦3.0 Pro任务出错:', error);
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 5000);
+        }
+      }
+    };
+    
+    // 开始轮询
+    poll();
+  };
+
 
   return (
     <Container fluid className="py-4">
@@ -1112,7 +1359,6 @@ function VideoGenerator() {
                             <ul>
                               <li><strong>⭐ Seedance Pro:</strong> 推荐使用，支持文生视频和图生视频</li>
                               <li><strong>Seedance Lite:</strong> 轻量版本，支持多种生成模式</li>
-                              <li><strong>Wan2.1 14B:</strong> 高质量视频生成</li>
                             </ul>
                             
                             <Alert variant="warning" className="py-2 px-3 mb-3">
@@ -1262,7 +1508,8 @@ function VideoGenerator() {
                                     查看详情
                                   </Button>
                                   
-                                  {task.status === 'succeeded' && task.content?.video_url && (
+                                  {((task.status === 'succeeded' && task.content?.video_url) || 
+                                    (task.status === 'done' && task.video_url)) && (
                                     <Button 
                                       size="sm"
                                       className="btn-play d-flex align-items-center justify-content-start"
@@ -1276,7 +1523,7 @@ function VideoGenerator() {
                                     </Button>
                                   )}
                                   
-                                  {task.status === 'running' && (
+                                  {(task.status === 'running' || task.status === 'generating') && (
                                     <Button 
                                       variant="outline-warning" 
                                       size="sm"
@@ -1382,7 +1629,7 @@ function VideoGenerator() {
                 </Table>
               </Col>
               
-              {selectedTask.content && selectedTask.content.video_url && (
+              {((selectedTask.content && selectedTask.content.video_url) || selectedTask.video_url) && (
                 <Col xs={12} className="mt-3">
                   <Alert variant="success">
                     <Alert.Heading>视频生成成功！</Alert.Heading>
@@ -1396,9 +1643,9 @@ function VideoGenerator() {
                         preload="metadata"
                         poster=""
                       >
-                        <source src={selectedTask.content.video_url} type="video/mp4" />
+                        <source src={selectedTask.content?.video_url || selectedTask.video_url} type="video/mp4" />
                         您的浏览器不支持视频播放。请 
-                        <a href={selectedTask.content.video_url} target="_blank" rel="noopener noreferrer">
+                        <a href={selectedTask.content?.video_url || selectedTask.video_url} target="_blank" rel="noopener noreferrer">
                           点击这里下载视频
                         </a>
                       </video>
@@ -1408,7 +1655,7 @@ function VideoGenerator() {
                     <div className="video-controls">
                       <Button 
                         variant="success" 
-                        href={selectedTask.content.video_url} 
+                        href={selectedTask.content?.video_url || selectedTask.video_url} 
                         target="_blank"
                         download
                       >
@@ -1419,7 +1666,7 @@ function VideoGenerator() {
                       <Button 
                         variant="outline-primary" 
                         onClick={() => {
-                          navigator.clipboard.writeText(selectedTask.content.video_url);
+                          navigator.clipboard.writeText(selectedTask.content?.video_url || selectedTask.video_url);
                           showAlert('info', '视频链接已复制到剪贴板');
                         }}
                       >
@@ -1427,7 +1674,7 @@ function VideoGenerator() {
                         复制链接
                       </Button>
                       
-                      {selectedTask.content.last_frame_url && (
+                      {selectedTask.content?.last_frame_url && (
                         <Button 
                           variant="outline-success" 
                           href={selectedTask.content.last_frame_url} 

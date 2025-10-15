@@ -7,6 +7,8 @@ import Settings from './components/Settings';
 import About from './components/About';
 import ImageGenerator from './components/ImageGenerator';
 import VideoGenerator from './components/VideoGenerator';
+import MotionImitation from './components/MotionImitation';
+import SmartSearch from './components/SmartSearch';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -35,6 +37,10 @@ function App() {
         return <ImageGenerator />;
       case 'video-generator':
         return <VideoGenerator />;
+      case 'motion-imitation':
+        return <MotionImitation />;
+      case 'smart-search':
+        return <SmartSearch />;
       case 'settings':
         return <Settings />;
       case 'about':

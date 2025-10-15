@@ -1,7 +1,7 @@
 {
-  "name": "ai-image-generator-desktop",
+  "name": "volcengine-ai-studio",
   "version": "1.0.0",
-  "description": "AI 图片生成器桌面应用 - 基于 Electron + React + Bootstrap 构建",
+  "description": "火山AI创作工坊 - 基于火山引擎API的智能创作平台",
   "main": "desktop-app.js",
   "homepage": "./",
   "scripts": {
@@ -29,8 +29,8 @@
     "dist-linux": "npm run build && electron-builder --linux"
   },
   "build": {
-    "appId": "com.aitools.image-generator",
-    "productName": "AI 图片生成器",
+    "appId": "com.volcengine.ai-studio",
+    "productName": "火山AI创作工坊",
     "directories": {
       "output": "dist"
     },

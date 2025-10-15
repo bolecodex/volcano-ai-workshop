@@ -31,6 +31,101 @@ export const storage = {
     }
   },
 
+  // AccessKey and SecretKey management (for visual services)
+  setAccessKeys: (accessKeyId, secretAccessKey) => {
+    try {
+      localStorage.setItem('volcengine_access_key_id', accessKeyId);
+      localStorage.setItem('volcengine_secret_access_key', secretAccessKey);
+      return true;
+    } catch (error) {
+      console.error('Failed to save access keys:', error);
+      return false;
+    }
+  },
+
+  getAccessKeyId: () => {
+    try {
+      return localStorage.getItem('volcengine_access_key_id') || '';
+    } catch (error) {
+      console.error('Failed to get access key id:', error);
+      return '';
+    }
+  },
+
+  getSecretAccessKey: () => {
+    try {
+      return localStorage.getItem('volcengine_secret_access_key') || '';
+    } catch (error) {
+      console.error('Failed to get secret access key:', error);
+      return '';
+    }
+  },
+
+  getAccessKeys: () => {
+    try {
+      return {
+        accessKeyId: localStorage.getItem('volcengine_access_key_id') || '',
+        secretAccessKey: localStorage.getItem('volcengine_secret_access_key') || ''
+      };
+    } catch (error) {
+      console.error('Failed to get access keys:', error);
+      return {
+        accessKeyId: '',
+        secretAccessKey: ''
+      };
+    }
+  },
+
+  removeAccessKeys: () => {
+    try {
+      localStorage.removeItem('volcengine_access_key_id');
+      localStorage.removeItem('volcengine_secret_access_key');
+      return true;
+    } catch (error) {
+      console.error('Failed to remove access keys:', error);
+      return false;
+    }
+  },
+
+  // TOS (Object Storage) configuration
+  setTOSConfig: (config) => {
+    try {
+      localStorage.setItem('tos_config', JSON.stringify(config));
+      return true;
+    } catch (error) {
+      console.error('Failed to save TOS config:', error);
+      return false;
+    }
+  },
+
+  getTOSConfig: () => {
+    try {
+      const config = localStorage.getItem('tos_config');
+      return config ? JSON.parse(config) : {
+        bucket: '',
+        region: 'cn-beijing',
+        endpoint: ''
+      };
+    } catch (error) {
+      console.error('Failed to get TOS config:', error);
+      return {
+        bucket: '',
+        region: 'cn-beijing',
+        endpoint: ''
+      };
+    }
+  },
+
+  removeTOSConfig: () => {
+    try {
+      localStorage.removeItem('tos_config');
+      return true;
+    } catch (error) {
+      console.error('Failed to remove TOS config:', error);
+      return false;
+    }
+  },
+
   // General settings management
   setSettings: (settings) => {
     try {
@@ -81,6 +176,75 @@ export const storage = {
       return true;
     } catch (error) {
       console.error('Failed to clear generation history:', error);
+      return false;
+    }
+  },
+
+  // Jimeng 3.0 Pro video tasks management
+  saveJimeng30ProTask: (task) => {
+    try {
+      const tasks = storage.getJimeng30ProTasks();
+      // 检查是否已存在该任务，如果存在则更新，否则添加
+      const existingIndex = tasks.findIndex(t => t.id === task.id);
+      if (existingIndex >= 0) {
+        tasks[existingIndex] = { ...tasks[existingIndex], ...task, updatedAt: new Date().toISOString() };
+      } else {
+        tasks.unshift({ ...task, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      }
+      // 只保留最近的 100 个任务
+      const updatedTasks = tasks.slice(0, 100);
+      localStorage.setItem('jimeng_30pro_video_tasks', JSON.stringify(updatedTasks));
+      return true;
+    } catch (error) {
+      console.error('Failed to save Jimeng 3.0 Pro task:', error);
+      return false;
+    }
+  },
+
+  getJimeng30ProTasks: () => {
+    try {
+      const tasks = localStorage.getItem('jimeng_30pro_video_tasks');
+      return tasks ? JSON.parse(tasks) : [];
+    } catch (error) {
+      console.error('Failed to get Jimeng 3.0 Pro tasks:', error);
+      return [];
+    }
+  },
+
+  updateJimeng30ProTask: (taskId, updates) => {
+    try {
+      const tasks = storage.getJimeng30ProTasks();
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+      if (taskIndex >= 0) {
+        tasks[taskIndex] = { ...tasks[taskIndex], ...updates, updatedAt: new Date().toISOString() };
+        localStorage.setItem('jimeng_30pro_video_tasks', JSON.stringify(tasks));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to update Jimeng 3.0 Pro task:', error);
+      return false;
+    }
+  },
+
+  deleteJimeng30ProTask: (taskId) => {
+    try {
+      const tasks = storage.getJimeng30ProTasks();
+      const filteredTasks = tasks.filter(t => t.id !== taskId);
+      localStorage.setItem('jimeng_30pro_video_tasks', JSON.stringify(filteredTasks));
+      return true;
+    } catch (error) {
+      console.error('Failed to delete Jimeng 3.0 Pro task:', error);
+      return false;
+    }
+  },
+
+  clearJimeng30ProTasks: () => {
+    try {
+      localStorage.removeItem('jimeng_30pro_video_tasks');
+      return true;
+    } catch (error) {
+      console.error('Failed to clear Jimeng 3.0 Pro tasks:', error);
       return false;
     }
   }

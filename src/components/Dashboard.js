@@ -10,15 +10,15 @@ function Dashboard({ electronInfo }) {
   });
 
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'success', message: 'Application started successfully!' },
-    { id: 2, type: 'info', message: 'Welcome to your new Electron app!' }
+    { id: 1, type: 'success', message: '应用启动成功！欢迎使用火山AI创作工坊' },
+    { id: 2, type: 'info', message: '提示：请先在设置页面配置API密钥以使用所有功能' }
   ]);
 
   const recentActivities = [
-    { id: 1, action: 'Application Started', time: '2 minutes ago', status: 'success' },
-    { id: 2, action: 'Settings Updated', time: '5 minutes ago', status: 'info' },
-    { id: 3, action: 'Data Synced', time: '10 minutes ago', status: 'success' },
-    { id: 4, action: 'User Login', time: '15 minutes ago', status: 'primary' }
+    { id: 1, action: '应用启动', time: '2 分钟前', status: 'success' },
+    { id: 2, action: '设置更新', time: '5 分钟前', status: 'info' },
+    { id: 3, action: '数据同步', time: '10 分钟前', status: 'success' },
+    { id: 4, action: '用户登录', time: '15 分钟前', status: 'primary' }
   ];
 
   const dismissNotification = (id) => {
@@ -30,11 +30,11 @@ function Dashboard({ electronInfo }) {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">
           <i className="bi bi-speedometer2 me-2"></i>
-          Dashboard
+          工作台
         </h2>
         <Button variant="primary" className="btn-gradient">
           <i className="bi bi-plus-circle me-1"></i>
-          New Project
+          新建项目
         </Button>
       </div>
 
@@ -57,28 +57,28 @@ function Dashboard({ electronInfo }) {
           <div className="stats-card text-center">
             <i className="bi bi-folder2-open display-4 mb-2"></i>
             <h3 className="mb-1">{stats.totalProjects}</h3>
-            <p className="mb-0">Total Projects</p>
+            <p className="mb-0">总项目数</p>
           </div>
         </Col>
         <Col md={3}>
           <div className="stats-card text-center">
             <i className="bi bi-people display-4 mb-2"></i>
             <h3 className="mb-1">{stats.activeUsers}</h3>
-            <p className="mb-0">Active Users</p>
+            <p className="mb-0">活跃用户</p>
           </div>
         </Col>
         <Col md={3}>
           <div className="stats-card text-center">
             <i className="bi bi-heart-pulse display-4 mb-2"></i>
             <h3 className="mb-1">{stats.systemHealth}%</h3>
-            <p className="mb-0">System Health</p>
+            <p className="mb-0">系统健康度</p>
           </div>
         </Col>
         <Col md={3}>
           <div className="stats-card text-center">
             <i className="bi bi-clock display-4 mb-2"></i>
             <h6 className="mb-1">{stats.lastUpdate}</h6>
-            <p className="mb-0">Last Update</p>
+            <p className="mb-0">最后更新</p>
           </div>
         </Col>
       </Row>
@@ -89,12 +89,12 @@ function Dashboard({ electronInfo }) {
           <Card className="feature-card h-100">
             <Card.Header className="bg-primary text-white">
               <i className="bi bi-activity me-2"></i>
-              System Status
+              系统状态
             </Card.Header>
             <Card.Body>
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <span>CPU Usage</span>
+                  <span>CPU 使用率</span>
                   <span>45%</span>
                 </div>
                 <ProgressBar variant="info" now={45} />
@@ -102,7 +102,7 @@ function Dashboard({ electronInfo }) {
               
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <span>Memory Usage</span>
+                  <span>内存使用率</span>
                   <span>62%</span>
                 </div>
                 <ProgressBar variant="warning" now={62} />
@@ -110,7 +110,7 @@ function Dashboard({ electronInfo }) {
               
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <span>Disk Usage</span>
+                  <span>磁盘使用率</span>
                   <span>78%</span>
                 </div>
                 <ProgressBar variant="danger" now={78} />
@@ -118,8 +118,8 @@ function Dashboard({ electronInfo }) {
 
               {electronInfo.isElectron && (
                 <div className="version-info mt-3">
-                  <strong>Platform:</strong> {electronInfo.platform}<br />
-                  <strong>Environment:</strong> Electron Desktop App
+                  <strong>运行平台:</strong> {electronInfo.platform}<br />
+                  <strong>运行环境:</strong> Electron 桌面应用
                 </div>
               )}
             </Card.Body>
@@ -131,7 +131,7 @@ function Dashboard({ electronInfo }) {
           <Card className="feature-card h-100">
             <Card.Header className="bg-success text-white">
               <i className="bi bi-clock-history me-2"></i>
-              Recent Activities
+              最近活动
             </Card.Header>
             <Card.Body>
               <Table responsive className="mb-0">
@@ -154,7 +154,7 @@ function Dashboard({ electronInfo }) {
               
               <div className="text-center mt-3">
                 <Button variant="outline-primary" size="sm">
-                  View All Activities
+                  查看所有活动
                 </Button>
               </div>
             </Card.Body>
@@ -168,32 +168,32 @@ function Dashboard({ electronInfo }) {
           <Card className="feature-card">
             <Card.Header className="bg-dark text-white">
               <i className="bi bi-lightning me-2"></i>
-              Quick Actions
+              快捷操作
             </Card.Header>
             <Card.Body>
               <Row>
                 <Col md={3} className="text-center mb-3">
                   <Button variant="outline-primary" className="w-100 py-3">
                     <i className="bi bi-plus-circle display-6 d-block mb-2"></i>
-                    Create New
+                    新建项目
                   </Button>
                 </Col>
                 <Col md={3} className="text-center mb-3">
                   <Button variant="outline-success" className="w-100 py-3">
                     <i className="bi bi-upload display-6 d-block mb-2"></i>
-                    Import Data
+                    导入数据
                   </Button>
                 </Col>
                 <Col md={3} className="text-center mb-3">
                   <Button variant="outline-warning" className="w-100 py-3">
                     <i className="bi bi-download display-6 d-block mb-2"></i>
-                    Export Data
+                    导出数据
                   </Button>
                 </Col>
                 <Col md={3} className="text-center mb-3">
                   <Button variant="outline-info" className="w-100 py-3">
                     <i className="bi bi-gear display-6 d-block mb-2"></i>
-                    Settings
+                    设置
                   </Button>
                 </Col>
               </Row>
