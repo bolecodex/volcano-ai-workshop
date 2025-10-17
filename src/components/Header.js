@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navbar, Nav, Container, Button } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Badge } from 'react-bootstrap';
 
 function Header() {
   return (
@@ -9,6 +9,7 @@ function Header() {
           <Navbar.Brand href="#" className="fw-bold fs-3">
             <i className="bi bi-lightning-charge me-2"></i>
             火山AI创作工坊
+            <Badge bg="danger" className="ms-2 fs-6">v1.2.0</Badge>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
@@ -26,9 +27,20 @@ function Header() {
         </Navbar>
         
         <div className="text-center mt-4">
-          <h1 className="display-4 fw-bold mb-3">欢迎使用火山AI创作工坊</h1>
+          <h1 className="display-4 fw-bold mb-3">
+            欢迎使用火山AI创作工坊
+            <Badge bg="warning" text="dark" className="ms-3 fs-6">全新升级</Badge>
+          </h1>
+          <p className="lead mb-2">
+            基于火山引擎API构建的智能创作平台
+          </p>
           <p className="lead">
-            基于火山引擎API构建的智能创作平台 • 图片生成 • 视频生成 • 动作模仿
+            <span className="me-3">🎨 图片生成</span>
+            <span className="me-3">🖌️ 智能绘图 <Badge bg="danger" pill>NEW</Badge></span>
+            <span className="me-3">🎬 视频生成</span>
+            <span className="me-3">🎭 动作模仿 <Badge bg="warning" pill>UP</Badge></span>
+            <span className="me-3">🧑 数字人 <Badge bg="danger" pill>NEW</Badge></span>
+            <span>🔍 智能搜索</span>
           </p>
         </div>
       </Container>
