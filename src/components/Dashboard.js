@@ -10,8 +10,9 @@ function Dashboard({ electronInfo }) {
   });
 
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'success', message: '应用启动成功！欢迎使用火山AI创作工坊' },
-    { id: 2, type: 'info', message: '提示：请先在设置页面配置API密钥以使用所有功能' }
+    { id: 1, type: 'success', message: '应用启动成功！欢迎使用火山AI创作工坊 v1.2.0' },
+    { id: 2, type: 'warning', message: '🎉 v1.2.0 重大更新：新增数字人、智能绘图、即梦动作模仿功能！' },
+    { id: 3, type: 'info', message: '提示：请先在设置页面配置API密钥以使用所有功能' }
   ]);
 
   const recentActivities = [
@@ -162,39 +163,147 @@ function Dashboard({ electronInfo }) {
         </Col>
       </Row>
 
-      {/* Quick Actions */}
+      {/* New Features Highlight */}
+      <Row className="mt-4">
+        <Col>
+          <Card className="feature-card border-warning">
+            <Card.Header className="bg-gradient text-white" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+              <i className="bi bi-stars me-2"></i>
+              ⭐ v1.2.0 新功能亮点
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                <Col md={4} className="mb-3">
+                  <Card className="h-100 shadow-sm hover-lift">
+                    <Card.Body className="text-center">
+                      <div className="feature-icon mb-3" style={{ fontSize: '3rem', color: '#667eea' }}>
+                        <i className="bi bi-person-video3"></i>
+                      </div>
+                      <h5 className="fw-bold">🧑 数字人</h5>
+                      <Badge bg="danger" className="mb-2">NEW</Badge>
+                      <p className="text-muted small mb-3">
+                        图片+音频生成高质量数字人视频。支持人物、宠物、动漫角色，突破竖屏限制
+                      </p>
+                      <div className="d-grid gap-2">
+                        <Button variant="primary" size="sm">
+                          <i className="bi bi-arrow-right-circle me-1"></i>
+                          立即体验
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col md={4} className="mb-3">
+                  <Card className="h-100 shadow-sm hover-lift">
+                    <Card.Body className="text-center">
+                      <div className="feature-icon mb-3" style={{ fontSize: '3rem', color: '#f093fb' }}>
+                        <i className="bi bi-brush"></i>
+                      </div>
+                      <h5 className="fw-bold">🖌️ 智能绘图</h5>
+                      <Badge bg="danger" className="mb-2">NEW</Badge>
+                      <p className="text-muted small mb-3">
+                        Inpainting涂抹编辑，AI智能填充。同步接口，实时获取结果
+                      </p>
+                      <div className="d-grid gap-2">
+                        <Button variant="info" size="sm">
+                          <i className="bi bi-arrow-right-circle me-1"></i>
+                          开始创作
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col md={4} className="mb-3">
+                  <Card className="h-100 shadow-sm hover-lift">
+                    <Card.Body className="text-center">
+                      <div className="feature-icon mb-3" style={{ fontSize: '3rem', color: '#4facfe' }}>
+                        <i className="bi bi-person-video2"></i>
+                      </div>
+                      <h5 className="fw-bold">🎭 即梦动作模仿</h5>
+                      <Badge bg="warning" className="mb-2">UPGRADED</Badge>
+                      <p className="text-muted small mb-3">
+                        更稳定、更逼真。支持各种画幅，与经典版本共存可切换
+                      </p>
+                      <div className="d-grid gap-2">
+                        <Button variant="success" size="sm">
+                          <i className="bi bi-arrow-right-circle me-1"></i>
+                          查看升级
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* All Features Overview */}
       <Row className="mt-4">
         <Col>
           <Card className="feature-card">
             <Card.Header className="bg-dark text-white">
-              <i className="bi bi-lightning me-2"></i>
-              快捷操作
+              <i className="bi bi-grid-3x3 me-2"></i>
+              所有功能
             </Card.Header>
             <Card.Body>
               <Row>
                 <Col md={3} className="text-center mb-3">
-                  <Button variant="outline-primary" className="w-100 py-3">
-                    <i className="bi bi-plus-circle display-6 d-block mb-2"></i>
-                    新建项目
-                  </Button>
+                  <div className="feature-box p-3">
+                    <i className="bi bi-image display-6 d-block mb-2 text-primary"></i>
+                    <h6 className="fw-bold">AI 图片生成</h6>
+                    <small className="text-muted">文生图、图生图<br/>多模型支持</small>
+                  </div>
                 </Col>
                 <Col md={3} className="text-center mb-3">
-                  <Button variant="outline-success" className="w-100 py-3">
-                    <i className="bi bi-upload display-6 d-block mb-2"></i>
-                    导入数据
-                  </Button>
+                  <div className="feature-box p-3">
+                    <i className="bi bi-brush display-6 d-block mb-2 text-info"></i>
+                    <h6 className="fw-bold">智能绘图 <Badge bg="danger" pill>NEW</Badge></h6>
+                    <small className="text-muted">涂抹编辑<br/>智能填充</small>
+                  </div>
                 </Col>
                 <Col md={3} className="text-center mb-3">
-                  <Button variant="outline-warning" className="w-100 py-3">
-                    <i className="bi bi-download display-6 d-block mb-2"></i>
-                    导出数据
-                  </Button>
+                  <div className="feature-box p-3">
+                    <i className="bi bi-camera-video display-6 d-block mb-2 text-success"></i>
+                    <h6 className="fw-bold">AI 视频生成</h6>
+                    <small className="text-muted">文生视频、图生视频<br/>即梦 3.0 Pro</small>
+                  </div>
                 </Col>
                 <Col md={3} className="text-center mb-3">
-                  <Button variant="outline-info" className="w-100 py-3">
-                    <i className="bi bi-gear display-6 d-block mb-2"></i>
-                    设置
-                  </Button>
+                  <div className="feature-box p-3">
+                    <i className="bi bi-person-video2 display-6 d-block mb-2 text-warning"></i>
+                    <h6 className="fw-bold">动作模仿 <Badge bg="warning" pill>UP</Badge></h6>
+                    <small className="text-muted">即梦版本<br/>经典版本</small>
+                  </div>
+                </Col>
+                <Col md={3} className="text-center mb-3">
+                  <div className="feature-box p-3">
+                    <i className="bi bi-person-video3 display-6 d-block mb-2 text-purple"></i>
+                    <h6 className="fw-bold">数字人 <Badge bg="danger" pill>NEW</Badge></h6>
+                    <small className="text-muted">OmniHuman1.5<br/>图片+音频</small>
+                  </div>
+                </Col>
+                <Col md={3} className="text-center mb-3">
+                  <div className="feature-box p-3">
+                    <i className="bi bi-search-heart display-6 d-block mb-2 text-danger"></i>
+                    <h6 className="fw-bold">智能搜图</h6>
+                    <small className="text-muted">多模态搜索<br/>向量数据库</small>
+                  </div>
+                </Col>
+                <Col md={3} className="text-center mb-3">
+                  <div className="feature-box p-3">
+                    <i className="bi bi-gear display-6 d-block mb-2 text-secondary"></i>
+                    <h6 className="fw-bold">设置</h6>
+                    <small className="text-muted">API配置<br/>系统设置</small>
+                  </div>
+                </Col>
+                <Col md={3} className="text-center mb-3">
+                  <div className="feature-box p-3">
+                    <i className="bi bi-info-circle display-6 d-block mb-2 text-info"></i>
+                    <h6 className="fw-bold">关于</h6>
+                    <small className="text-muted">版本信息<br/>使用帮助</small>
+                  </div>
                 </Col>
               </Row>
             </Card.Body>
