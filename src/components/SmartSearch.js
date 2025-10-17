@@ -597,28 +597,30 @@ function SmartSearch() {
                         
                         // 判断是否是 TOS 地址
                         const isTosUrl = videoUrl && typeof videoUrl === 'string' && videoUrl.startsWith('tos://');
-                        let isHttpUrl = videoUrl && typeof videoUrl === 'string' && (videoUrl.startsWith('http://') || videoUrl.startsWith('https://'));
+                        // 检查是否是 HTTPS 格式的 TOS URL
+                        const isHttpsTosUrl = videoUrl && typeof videoUrl === 'string' && 
+                          (videoUrl.includes('.tos-cn-beijing.volces.com/') || 
+                           (videoUrl.includes('.tos') && videoUrl.includes('.volces.com/')));
                         
-                        // 优先使用预签名URL，如果没有则转换为HTTP地址
-                        let displayUrl = videoUrl;
+                        let isHttpUrl = videoUrl && typeof videoUrl === 'string' && 
+                          (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) && 
+                          !isHttpsTosUrl; // 排除TOS的HTTPS URL
+                        
+                        // 优先使用预签名URL
+                        let displayUrl = null;
                         let needsPresignedUrl = false;
                         
-                        if (isTosUrl) {
-                          // 检查是否已有预签名URL
-                          if (presignedUrls[videoUrl]) {
-                            displayUrl = presignedUrls[videoUrl];
-                            isHttpUrl = true;
-                          } else {
-                            // 解析 TOS URL: tos://bucket/object_key
-                            const tosMatch = videoUrl.match(/^tos:\/\/([^/]+)\/(.+)$/);
-                            if (tosMatch) {
-                              const [, bucket, objectKey] = tosMatch;
-                              // 构造 HTTP URL（假设使用华北2北京的 endpoint）
-                              displayUrl = `https://${bucket}.tos-cn-beijing.volces.com/${objectKey}`;
-                              isHttpUrl = true;
-                              needsPresignedUrl = true; // 标记需要预签名URL
-                            }
-                          }
+                        // 检查是否已有预签名URL
+                        if (presignedUrls[videoUrl]) {
+                          displayUrl = presignedUrls[videoUrl];
+                          isHttpUrl = true;
+                        } else if (isTosUrl || isHttpsTosUrl) {
+                          // 需要预签名URL但还未生成
+                          needsPresignedUrl = true;
+                          displayUrl = null; // 不显示未签名的URL
+                        } else if (isHttpUrl) {
+                          // 普通的HTTP URL,可以直接使用
+                          displayUrl = videoUrl;
                         }
                         
                         return (
@@ -631,7 +633,14 @@ function SmartSearch() {
                                     <Spinner animation="border" variant="light" className="mb-2" />
                                     <div className="small">正在生成访问链接...</div>
                                   </div>
-                                ) : isHttpUrl ? (
+                                ) : needsPresignedUrl && !displayUrl ? (
+                                  <div className="text-white text-center">
+                                    <i className="bi bi-lock" style={{ fontSize: '48px' }}></i>
+                                    <div className="mt-2 small">
+                                      需要生成预签名URL才能访问
+                                    </div>
+                                  </div>
+                                ) : displayUrl && isHttpUrl ? (
                                   <video 
                                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                     controls
@@ -714,7 +723,7 @@ function SmartSearch() {
                                   )}
                                 </div>
                                 
-                                {(isTosUrl || needsPresignedUrl) && (
+                                {(isTosUrl || isHttpsTosUrl || needsPresignedUrl) && (
                                   <Alert 
                                     variant={presignedUrls[videoUrl] ? "success" : generatingUrls ? "info" : "warning"} 
                                     className="mt-2 mb-0 py-2 small"
@@ -732,7 +741,7 @@ function SmartSearch() {
                                     ) : (
                                       <>
                                         <i className="bi bi-exclamation-triangle me-1"></i>
-                                        TOS资源需要预签名URL才能访问
+                                        TOS私有资源需要预签名URL才能访问
                                       </>
                                     )}
                                   </Alert>

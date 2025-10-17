@@ -31,7 +31,8 @@ function MotionImitation() {
     imageFile: null,
     videoFile: null,
     useImageFile: false,  // true=本地文件, false=URL
-    useVideoFile: false   // true=本地文件, false=URL
+    useVideoFile: false,   // true=本地文件, false=URL
+    apiVersion: 'jimeng'  // 'classic' = 旧版, 'jimeng' = 即梦动作模仿
   });
 
 
@@ -187,26 +188,54 @@ function MotionImitation() {
         }
       }
 
-      const requestData = {
-        req_key: 'realman_avatar_imitator_v2v_gen_video',
-        task_id: taskId,
-        accessKeyId: accessKeyId,
-        secretAccessKey: secretAccessKey
-      };
-
-      console.log('📤 发送查询请求:', {
-        req_key: requestData.req_key,
-        task_id: requestData.task_id,
-        has_accessKey: !!requestData.accessKeyId
-      });
-
+      // 检查任务使用的API版本
+      const apiVersion = task?.api_version || 'classic';  // 默认使用旧版
+      
+      let requestData;
       let result;
-      if (window.electronAPI && window.electronAPI.queryMotionImitationTask) {
-        result = await window.electronAPI.queryMotionImitationTask(requestData);
-        console.log('📥 收到查询结果:', result);
+
+      if (apiVersion === 'jimeng') {
+        // 即梦动作模仿接口
+        requestData = {
+          task_id: taskId,
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey
+        };
+
+        console.log('📤 发送查询请求（即梦版本）:', {
+          task_id: requestData.task_id,
+          has_accessKey: !!requestData.accessKeyId
+        });
+
+        if (window.electronAPI && window.electronAPI.queryJimengMotionImitationTask) {
+          result = await window.electronAPI.queryJimengMotionImitationTask(requestData);
+          console.log('📥 收到查询结果:', result);
+        } else {
+          showAlert('warning', '请使用Electron桌面应用');
+          return;
+        }
       } else {
-        showAlert('warning', '请使用Electron桌面应用');
-        return;
+        // 旧版动作模仿接口
+        requestData = {
+          req_key: 'realman_avatar_imitator_v2v_gen_video',
+          task_id: taskId,
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey
+        };
+
+        console.log('📤 发送查询请求（经典版本）:', {
+          req_key: requestData.req_key,
+          task_id: requestData.task_id,
+          has_accessKey: !!requestData.accessKeyId
+        });
+
+        if (window.electronAPI && window.electronAPI.queryMotionImitationTask) {
+          result = await window.electronAPI.queryMotionImitationTask(requestData);
+          console.log('📥 收到查询结果:', result);
+        } else {
+          showAlert('warning', '请使用Electron桌面应用');
+          return;
+        }
       }
 
       if (result.success) {
@@ -230,13 +259,17 @@ function MotionImitation() {
         showAlert('success', `✅ 任务状态已更新: ${statusText}`);
       } else {
         const errorMessage = result.error?.message || '未知错误';
+        const errorCode = result.error?.code || '';
         console.error('❌ 查询失败，错误信息:', errorMessage);
         console.error('完整错误对象:', result.error);
         
         // 提供更友好的错误提示
         let userMessage = `查询任务失败: ${errorMessage}`;
         
-        if (errorMessage.includes('Input invalid')) {
+        // 处理500 Internal Error
+        if (errorMessage.includes('Internal Error') || errorMessage.includes('500')) {
+          userMessage = `⚠️ 服务器内部错误 (500)\n\n可能原因：\n1. 任务正在初始化中，系统还未完全准备好\n2. API服务端暂时性故障\n3. 任务处理遇到问题\n\n💡 建议：\n• 等待1-2分钟后再次刷新\n• 如果持续失败，可能需要重新提交任务\n• 检查输入的图片和视频URL是否正常访问\n\n任务ID: ${taskId}`;
+        } else if (errorMessage.includes('Input invalid')) {
           // 检查任务年龄并提供精准提示
           let ageInfo = '';
           if (task) {
@@ -512,26 +545,50 @@ function MotionImitation() {
         return;
       }
 
-      const requestData = {
-        req_key: 'realman_avatar_imitator_v2v_gen_video',
-        image_url: imageUrl,
-        driving_video_info: {
-          store_type: 0,
-          video_url: videoUrl
-        },
-        accessKeyId: accessKeyId,
-        secretAccessKey: secretAccessKey
-      };
-
-      // 使用IPC发送请求
+      // 根据选择的API版本构建不同的请求数据
+      let requestData;
       let result;
-      if (window.electronAPI && window.electronAPI.submitMotionImitationTask) {
-        console.log('🖥️ 使用Electron IPC通信提交任务');
-        result = await window.electronAPI.submitMotionImitationTask(requestData);
+      
+      if (formData.apiVersion === 'jimeng') {
+        // 即梦动作模仿接口（新版）
+        requestData = {
+          image_url: imageUrl,
+          video_url: videoUrl,
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey
+        };
+
+        // 使用IPC发送请求
+        if (window.electronAPI && window.electronAPI.submitJimengMotionImitationTask) {
+          console.log('🖥️ 使用即梦动作模仿接口提交任务');
+          result = await window.electronAPI.submitJimengMotionImitationTask(requestData);
+        } else {
+          console.log('⚠️ 未找到即梦动作模仿IPC接口，请使用Electron桌面应用');
+          showAlert('warning', '请使用Electron桌面应用以获得完整功能');
+          return;
+        }
       } else {
-        console.log('⚠️ 未找到IPC接口，请使用Electron桌面应用');
-        showAlert('warning', '请使用Electron桌面应用以获得完整功能');
-        return;
+        // 旧版动作模仿接口
+        requestData = {
+          req_key: 'realman_avatar_imitator_v2v_gen_video',
+          image_url: imageUrl,
+          driving_video_info: {
+            store_type: 0,
+            video_url: videoUrl
+          },
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey
+        };
+
+        // 使用IPC发送请求
+        if (window.electronAPI && window.electronAPI.submitMotionImitationTask) {
+          console.log('🖥️ 使用经典动作模仿接口提交任务');
+          result = await window.electronAPI.submitMotionImitationTask(requestData);
+        } else {
+          console.log('⚠️ 未找到IPC接口，请使用Electron桌面应用');
+          showAlert('warning', '请使用Electron桌面应用以获得完整功能');
+          return;
+        }
       }
       
       if (result.success) {
@@ -547,12 +604,14 @@ function MotionImitation() {
           create_time: new Date().toISOString(),
           image_preview: formData.useImageFile && formData.imageFile ? URL.createObjectURL(formData.imageFile) : imageUrl,
           video_preview: formData.useVideoFile ? '本地视频文件' : videoUrl,
-          message: '任务已提交，正在处理...'
+          message: '任务已提交，正在处理...',
+          api_version: formData.apiVersion  // 保存使用的API版本
         };
         saveTaskToHistory(taskData);
         
         // 显示成功提示，自动切换到任务列表
-        showAlert('success', `✅ 任务提交成功！任务ID: ${taskId}\n\n任务正在生成中，请在"任务列表"标签页中查看进度。\n\n⏱️ 提示：建议等待30秒后再点击"刷新状态"查询进度。`);
+        const apiVersionText = formData.apiVersion === 'jimeng' ? '即梦动作模仿' : '经典版本';
+        showAlert('success', `✅ 任务提交成功！\n\n📋 任务ID: ${taskId}\n🔧 接口: ${apiVersionText}\n\n任务正在生成中，请在"任务列表"标签页中查看进度。\n\n⏱️ 重要提示：\n• 新任务需要约1-3分钟开始处理\n• 建议等待3-5分钟后再点击"刷新状态"\n• 过早查询可能会遇到"Internal Error"，这是正常现象\n• 生成完整视频通常需要5-10分钟`);
         
         // 自动切换到任务列表标签页
         setTimeout(() => {
@@ -566,7 +625,8 @@ function MotionImitation() {
           imageFile: null,
           videoFile: null,
           useImageFile: false,
-          useVideoFile: false
+          useVideoFile: false,
+          apiVersion: 'jimeng'  // 重置为默认版本
         });
         
         // 可选：自动切换到任务列表标签页
@@ -607,7 +667,8 @@ function MotionImitation() {
       imageFile: null,
       videoFile: null,
       useImageFile: false,
-      useVideoFile: false
+      useVideoFile: false,
+      apiVersion: 'jimeng'  // 默认使用即梦版本
     });
   };
 
@@ -694,6 +755,46 @@ function MotionImitation() {
                 {/* 左侧：输入配置 */}
                 <Col lg={6}>
                   <Form>
+                    {/* API版本选择 */}
+                    <Card className="mb-4 border-info">
+                      <Card.Header className="bg-info text-white">
+                        <h6 className="mb-0">
+                          <i className="bi bi-gear me-2"></i>
+                          选择接口版本
+                        </h6>
+                      </Card.Header>
+                      <Card.Body>
+                        <Form.Group>
+                          <Form.Label>动作模仿接口</Form.Label>
+                          <div className="d-flex gap-3">
+                            <Form.Check
+                              type="radio"
+                              label="🔥 即梦动作模仿（推荐）"
+                              name="apiVersion"
+                              value="jimeng"
+                              checked={formData.apiVersion === 'jimeng'}
+                              onChange={(e) => setFormData(prev => ({ ...prev, apiVersion: e.target.value }))}
+                            />
+                            <Form.Check
+                              type="radio"
+                              label="📦 经典版本"
+                              name="apiVersion"
+                              value="classic"
+                              checked={formData.apiVersion === 'classic'}
+                              onChange={(e) => setFormData(prev => ({ ...prev, apiVersion: e.target.value }))}
+                            />
+                          </div>
+                          <Form.Text className="text-muted">
+                            <i className="bi bi-info-circle me-1"></i>
+                            {formData.apiVersion === 'jimeng' 
+                              ? '即梦动作模仿（生动模式）：更稳定、更逼真，支持各种画幅比例，突破竖屏限制'
+                              : '经典版本：原有的动作模仿接口'
+                            }
+                          </Form.Text>
+                        </Form.Group>
+                      </Card.Body>
+                    </Card>
+
                     {/* 图片输入 */}
                     <Card className="mb-4 border-primary">
                       <Card.Header className="bg-primary text-white">
@@ -902,6 +1003,18 @@ function MotionImitation() {
                         <p><strong>功能介绍：</strong></p>
                         <p>动作模仿功能可以让静态图片中的人物"动"起来，模仿驱动视频中的动作和表情。适用于制作动态头像、虚拟形象视频等场景。</p>
                         
+                        <Alert variant="success" className="py-2 px-3 mb-3">
+                          <small>
+                            <i className="bi bi-star-fill me-1"></i>
+                            <strong>🔥 即梦动作模仿（推荐）</strong><br/>
+                            • 更稳定、更逼真的动作还原效果<br/>
+                            • 突破竖屏限制，支持各种画幅和比例<br/>
+                            • 支持多种风格角色（真人、二次元等）<br/>
+                            • 具备一定的运镜还原能力<br/>
+                            • 主体及背景特征与输入图片保持一致
+                          </small>
+                        </Alert>
+                        
                         <Alert variant="danger" className="py-2 px-3 mb-3">
                           <small>
                             <i className="bi bi-exclamation-triangle-fill me-1"></i>
@@ -1088,18 +1201,19 @@ function MotionImitation() {
                         <Table striped bordered hover>
                           <thead>
                             <tr>
-                              <th style={{ width: '25%' }}>任务ID</th>
-                              <th style={{ width: '10%' }}>状态</th>
-                              <th style={{ width: '15%' }}>创建时间</th>
-                              <th style={{ width: '15%' }}>更新时间</th>
+                              <th style={{ width: '20%' }}>任务ID</th>
+                              <th style={{ width: '8%' }}>接口</th>
+                              <th style={{ width: '8%' }}>状态</th>
+                              <th style={{ width: '13%' }}>创建时间</th>
+                              <th style={{ width: '13%' }}>更新时间</th>
                               <th style={{ width: '10%' }}>预览</th>
-                              <th style={{ width: '25%' }}>操作</th>
+                              <th style={{ width: '28%' }}>操作</th>
                             </tr>
                           </thead>
                           <tbody>
                             {getFilteredTasks().length === 0 ? (
                               <tr>
-                                <td colSpan="6" className="text-center py-4 text-muted">
+                                <td colSpan="7" className="text-center py-4 text-muted">
                                   {taskFilter.status || taskFilter.taskId ? '没有找到匹配的任务' : '暂无任务数据'}
                                 </td>
                               </tr>
@@ -1110,6 +1224,11 @@ function MotionImitation() {
                                   <tr key={task.task_id}>
                                     <td>
                                       <code className="task-id">{task.task_id}</code>
+                                    </td>
+                                    <td>
+                                      <Badge bg={task.api_version === 'jimeng' ? 'info' : 'secondary'}>
+                                        {task.api_version === 'jimeng' ? '即梦' : '经典'}
+                                      </Badge>
                                     </td>
                                     <td>
                                       <Badge bg={statusInfo.variant}>{statusInfo.text}</Badge>
@@ -1231,6 +1350,14 @@ function MotionImitation() {
                     <tr>
                       <td><strong>任务ID:</strong></td>
                       <td><code>{selectedTask.task_id}</code></td>
+                    </tr>
+                    <tr>
+                      <td><strong>接口版本:</strong></td>
+                      <td>
+                        <Badge bg={selectedTask.api_version === 'jimeng' ? 'info' : 'secondary'}>
+                          {selectedTask.api_version === 'jimeng' ? '即梦动作模仿' : '经典版本'}
+                        </Badge>
+                      </td>
                     </tr>
                     <tr>
                       <td><strong>状态:</strong></td>

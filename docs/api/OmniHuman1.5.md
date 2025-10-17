@@ -1,0 +1,1155 @@
+
+文档中心
+请输入关键字
+搜索历史
+智能视觉
+花费
+智能创作云
+热门搜索
+扣子
+火山方舟
+豆包大模型
+语音合成
+云服务器
+文档
+备案
+控制台
+z
+zhaoweibo.0820 / eps_yxd_group
+账号管理
+账号ID : 2108323502
+联邦登陆
+企业认证
+费用中心
+可用余额¥ 0.00
+充值汇款
+账户总览
+账单详情
+费用分析
+发票管理
+权限与安全
+安全设置
+访问控制
+操作审计
+API 访问密钥
+工具与其他
+公测申请
+资源管理
+配额中心
+伙伴控制台
+待办事项
+待支付
+0
+待续费
+0
+待处理工单
+0
+未读消息
+0
+即梦AI
+文档首页
+/
+即梦AI
+/
+即梦AI-视频生成
+/
+OmniHuman1.5
+/
+调用步骤1：主体识别
+在本产品文档中搜索
+调用步骤1：主体识别
+最近更新时间：2025.09.19 17:50:37
+首次发布时间：2025.09.17 14:05:18
+我的收藏
+有用
+无用
+接口简介​
+用于识别图片中是否包含人、类人、拟人等主体。​
+接入说明​
+请求说明​
+​
+名称​
+内容​
+接口地址​
+https://visual.volcengineapi.com​
+请求方式​
+POST​
+Content-Type​
+application/json​
+​
+提交任务​
+提交任务请求参数​
+Query参数​
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVSubmitTask&Version=2022-08-31​
+​
+参数​
+类型​
+可选/必选​
+说明​
+Action​
+string​
+必选​
+接口名，取值：CVSubmitTask​
+Version​
+string​
+必选​
+版本号，取值：2022-08-31​
+​
+Header参数​
+注意​
+本服务固定值：Region为cn-north-1，Service为cv​
+主要用于鉴权，详见 公共参数 - 签名参数 - 在Header中的场景部分​
+Body参数​
+注意​
+业务请求参数，放到request.body中，MIME-Type为application/json​
+​
+名称​
+类型​
+必选​
+描述​
+req_key​
+string​
+必选​
+服务标识​
+取固定值: jimeng_realman_avatar_picture_create_role_omni_v15​
+image_url​
+string​
+必选​
+人像图片URL链接​
+​
+提交任务返回参数​
+通用返回参数​
+请参考通用返回字段及错误码​
+业务返回参数​
+重点关注data中以下字段，其他字段为公共返回(可忽略或不做解析)​
+​
+字段​
+类型​
+说明​
+task_id​
+string​
+任务ID，用于查询结果​
+​
+提交任务请求&返回完整示例​
+请求示例：​
+​
+{​
+    "req_key": "jimeng_realman_avatar_picture_create_role_omni_v15",​
+    "image_url": "https://xxxxx"​
+}​
+​
+返回示例：​
+​
+{​
+    "code": 10000,​
+    "data": {​
+        "task_id": "7392616336519610409"​
+    },​
+    "message": "Success",​
+    "request_id": "20240720103939AF0029465CF6A74E51EC",​
+    "status": 10000,​
+    "time_elapsed": "104.852309ms"​
+}​
+​
+查询任务​
+查询任务请求参数​
+Query参数​
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVGetResult&Version=2022-08-31​
+​
+参数​
+类型​
+可选/必选​
+说明​
+Action​
+string​
+必选​
+接口名，固定值：CVGetResult​
+Version​
+string​
+必选​
+版本号，固定值：2022-08-31​
+​
+Header参数​
+注意​
+本服务固定值：Region为cn-north-1，Service为cv​
+主要用于鉴权，详见 公共参数 - 签名参数 - 在Header中的场景部分​
+Body参数​
+注意​
+业务请求参数，放到request.body中，MIME-Type为application/json​
+​
+参数​
+类型​
+可选/必选​
+说明​
+req_key​
+string​
+必选​
+服务标识​
+取固定值: jimeng_realman_avatar_picture_create_role_omni_v15​
+task_id​
+string​
+必选​
+任务ID，此字段的取值为提交任务接口的返回​
+​
+查询任务返回参数​
+通用返回参数​
+请参考通用返回字段及错误码​
+业务返回参数​
+说明​
+重点关注data中以下字段，其他字段为公共返回(可忽略或不做解析)​
+​
+参数名​
+参数说明​
+参数示例​
+resp_data​
+图片识别结果​
+resp_data为序列化后的JSON字符串，其中的status参数为识别结果，取值为：​
+0：不包含人、类人、拟人等主体​
+1：包含人、类人、拟人等主体​
+​
+status​
+任务执行状态​
+in_queue：任务已提交​
+generating：任务已被消费，处理中​
+done：处理完成，成功或者失败，可根据外层code&message进行判断​
+not_found：任务未找到，可能原因是无此任务或任务已过期(12小时)​
+expired：任务已过期，请尝试重新提交任务请求​
+​
+​
+查询任务请求&返回完整示例​
+请求示例：​
+​
+{​
+    "req_key": "jimeng_realman_avatar_picture_create_role_omni_v15",​
+    "task_id": "<任务提交接口返回task_id>"​
+}​
+​
+返回示例：​
+​
+{​
+    "code": 10000,​
+    "data": {​
+        "resp_data":"{\"status\":1}",​
+        "status": "done"​
+    },​
+    "message": "Success",​
+    "request_id": "2025061718460554C9B78D23B0BAB45B2A",​
+    "status": 10000,​
+    "time_elapsed": "508.312154ms"​
+}​
+​
+错误码​
+通用错误码​
+请参考通用返回字段及错误码​
+业务错误码​
+​
+HttpCode​
+错误码​
+错误消息​
+描述​
+是否需要重试​
+200​
+10000​
+无​
+请求成功​
+不需要​
+400​
+50411​
+Pre Img Risk Not Pass​
+输入图片前审核未通过​
+不需要​
+400​
+50511​
+Post Img Risk Not Pass​
+输出图片后审核未通过​
+可重试​
+400​
+50412​
+Text Risk Not Pass​
+输入文本前审核未通过​
+不需要​
+400​
+50512​
+Post Text Risk Not Pass​
+输出文本后审核未通过​
+不需要​
+400​
+50413​
+Post Text Risk Not Pass​
+输入文本含敏感词、版权词等审核不通过​
+不需要​
+429​
+50429​
+Request Has Reached API Limit, Please Try Later​
+QPS超限​
+可重试​
+429​
+50430​
+Request Has Reached API Concurrent Limit, Please Try Later​
+并发超限​
+可重试​
+500​
+50500​
+Internal Error​
+内部错误​
+可重试​
+500​
+50501​
+Internal RPC Error​
+内部算法错误​
+可重试​
+​
+​
+接入说明​
+SDK使用说明​
+请参考SDK使用说明​
+HTTP方式接入说明​
+请参考HTTP请求示例​
+​
+​
+接口简介
+接入说明
+请求说明
+提交任务
+提交任务请求参数
+Query参数
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVSubmitTask&Version=2022-08-31
+Header参数
+Body参数
+提交任务返回参数
+通用返回参数
+业务返回参数
+提交任务请求&返回完整示例
+查询任务
+查询任务请求参数
+Query参数
+Header参数
+Body参数
+查询任务返回参数
+通用返回参数
+业务返回参数
+查询任务请求&返回完整示例
+错误码
+通用错误码
+业务错误码
+接入说明
+SDK使用说明
+HTTP方式接入说明
+鼠标选中内容，快速反馈问题
+选中存在疑惑的内容，即可快速反馈问题，我们将会跟进处理
+不再提示
+好的，知道了
+
+全天候售后服务
+7x24小时专业工程师品质服务
+
+极速服务应答
+秒级应答为业务保驾护航
+
+客户价值为先
+从服务价值到创造客户价值
+
+全方位安全保障
+打造一朵“透明可信”的云
+logo
+关于我们
+为什么选火山
+文档中心
+联系我们
+人才招聘
+云信任中心
+友情链接
+产品
+云服务器
+GPU云服务器
+机器学习平台
+客户数据平台 VeCDP
+飞连
+视频直播
+全部产品
+解决方案
+汽车行业
+金融行业
+文娱行业
+医疗健康行业
+传媒行业
+智慧文旅
+大消费
+服务与支持
+备案服务
+服务咨询
+建议与反馈
+廉洁舞弊举报
+举报平台
+联系我们
+业务咨询：service@volcengine.com
+市场合作：marketing@volcengine.com
+电话：400-850-0030
+地址：北京市海淀区北三环西路甲18号院大钟寺广场1号楼
+
+微信公众号
+
+抖音号
+
+视频号
+© 北京火山引擎科技有限公司 2025 版权所有
+代理域名注册服务机构：新网数码 商中在线
+服务条款
+隐私政策
+更多协议
+
+京公网安备11010802032137号
+京ICP备20018813号-3
+营业执照
+增值电信业务经营许可证京B2-20202418，A2.B1.B2-20202637
+网络文化经营许可证：京网文（2023）4872-140号
+
+文档中心
+请输入关键字
+搜索历史
+智能视觉
+花费
+智能创作云
+热门搜索
+扣子
+火山方舟
+豆包大模型
+语音合成
+云服务器
+文档
+备案
+控制台
+z
+zhaoweibo.0820 / eps_yxd_group
+账号管理
+账号ID : 2108323502
+联邦登陆
+企业认证
+费用中心
+可用余额¥ 0.00
+充值汇款
+账户总览
+账单详情
+费用分析
+发票管理
+权限与安全
+安全设置
+访问控制
+操作审计
+API 访问密钥
+工具与其他
+公测申请
+资源管理
+配额中心
+伙伴控制台
+待办事项
+待支付
+0
+待续费
+0
+待处理工单
+0
+未读消息
+0
+即梦AI
+文档首页
+/
+即梦AI
+/
+即梦AI-视频生成
+/
+OmniHuman1.5
+/
+调用步骤2：主体检测
+在本产品文档中搜索
+调用步骤2：主体检测
+最近更新时间：2025.09.25 15:00:35
+首次发布时间：2025.09.17 14:05:08
+我的收藏
+有用
+无用
+接口简介​
+检测图片中的主体，并支持返回主体对应的mask图。如果在视频生成时不需要指定主体说话，可以跳过该步骤。​
+接入说明​
+请求说明​
+​
+名称​
+内容​
+接口地址​
+https://visual.volcengineapi.com​
+请求方式​
+POST​
+Content-Type​
+application/json​
+​
+请求参数​
+Query参数​
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVProcess&Version=2022-08-31​
+​
+参数​
+类型​
+可选/必选​
+说明​
+Action​
+string​
+必选​
+接口名，取值：CVProcess​
+Version​
+string​
+必选​
+版本号，取值：2022-08-31​
+​
+Header参数​
+注意​
+本服务固定值：Region为cn-north-1，Service为cv​
+主要用于鉴权，详见 公共参数 - 签名参数 - 在Header中的场景部分​
+Body参数​
+注意​
+业务请求参数，放到request.body中，MIME-Type为application/json​
+​
+名称​
+类型​
+必选​
+描述​
+req_key​
+string​
+必选​
+服务标识​
+取固定值: jimeng_realman_avatar_object_detection​
+image_url​
+string​
+必选​
+人像图片URL链接（最多支持检测5个主体）​
+​
+返回参数​
+通用返回参数​
+请参考通用返回字段及错误码​
+业务返回参数​
+重点关注data中以下字段，其他字段为公共返回(可忽略或不做解析)​
+​
+字段​
+类型​
+说明​
+resp_data​
+JSON string​
+图片识别结果中各字段说明：​
+code：错误码，0表示成功​
+status：是否包含主体，0表示不包含主体，1表示包含主体​
+object_detection_result.mask.url（重点关注此字段）：图片中主体对应的mask图URL列表。URL列表顺序与输入图中主体从左到右的顺序一致。如需预览mask图片，可以通过URL下载并手动修改图片文件名的格式后缀为.png，保存为.png后再查看。​
+​
+请求&返回完整示例​
+请求示例：​
+​
+{​
+    "req_key": "jimeng_realman_avatar_object_detection",​
+    "image_url": "https://xxxxx"​
+}​
+​
+返回示例：​
+​
+{​
+    "code": 10000,​
+    "data": {​
+        "resp_data": "{\"code\":0,\"object_detection_result\":{\"mask\":{\"url\":[\"https://xxxxx\"]}},\"status\":1}"​
+    },​
+    "message": "Success",​
+    "request_id": "202509231217222E094AB54EF8C50A04E3",​
+    "status": 10000,​
+    "time_elapsed": "3.964553804s"​
+}​
+​
+错误码​
+通用错误码​
+请参考通用返回字段及错误码​
+业务错误码​
+​
+HttpCode​
+错误码​
+错误消息​
+描述​
+是否需要重试​
+200​
+10000​
+无​
+请求成功​
+不需要​
+400​
+50411​
+Pre Img Risk Not Pass​
+输入图片前审核未通过​
+不需要​
+400​
+50511​
+Post Img Risk Not Pass​
+输出图片后审核未通过​
+可重试​
+400​
+50412​
+Text Risk Not Pass​
+输入文本前审核未通过​
+不需要​
+400​
+50512​
+Post Text Risk Not Pass​
+输出文本后审核未通过​
+不需要​
+400​
+50413​
+Post Text Risk Not Pass​
+输入文本含敏感词、版权词等审核不通过​
+不需要​
+429​
+50429​
+Request Has Reached API Limit, Please Try Later​
+QPS超限​
+可重试​
+429​
+50430​
+Request Has Reached API Concurrent Limit, Please Try Later​
+并发超限​
+可重试​
+500​
+50500​
+Internal Error​
+内部错误​
+可重试​
+500​
+50501​
+Internal RPC Error​
+内部算法错误​
+可重试​
+​
+接入说明​
+SDK使用说明​
+请参考SDK使用说明​
+HTTP方式接入说明​
+请参考HTTP请求示例​
+​
+​
+接口简介
+接入说明
+请求说明
+请求参数
+Query参数
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVProcess&Version=2022-08-31
+Header参数
+Body参数
+返回参数
+通用返回参数
+业务返回参数
+请求&返回完整示例
+错误码
+通用错误码
+业务错误码
+接入说明
+SDK使用说明
+HTTP方式接入说明
+鼠标选中内容，快速反馈问题
+选中存在疑惑的内容，即可快速反馈问题，我们将会跟进处理
+不再提示
+好的，知道了
+
+全天候售后服务
+7x24小时专业工程师品质服务
+
+极速服务应答
+秒级应答为业务保驾护航
+
+客户价值为先
+从服务价值到创造客户价值
+
+全方位安全保障
+打造一朵“透明可信”的云
+logo
+关于我们
+为什么选火山
+文档中心
+联系我们
+人才招聘
+云信任中心
+友情链接
+产品
+云服务器
+GPU云服务器
+机器学习平台
+客户数据平台 VeCDP
+飞连
+视频直播
+全部产品
+解决方案
+汽车行业
+金融行业
+文娱行业
+医疗健康行业
+传媒行业
+智慧文旅
+大消费
+服务与支持
+备案服务
+服务咨询
+建议与反馈
+廉洁舞弊举报
+举报平台
+联系我们
+业务咨询：service@volcengine.com
+市场合作：marketing@volcengine.com
+电话：400-850-0030
+地址：北京市海淀区北三环西路甲18号院大钟寺广场1号楼
+
+微信公众号
+
+抖音号
+
+视频号
+© 北京火山引擎科技有限公司 2025 版权所有
+代理域名注册服务机构：新网数码 商中在线
+服务条款
+隐私政策
+更多协议
+
+京公网安备11010802032137号
+京ICP备20018813号-3
+营业执照
+增值电信业务经营许可证京B2-20202418，A2.B1.B2-20202637
+网络文化经营许可证：京网文（2023）4872-140号
+
+文档中心
+请输入关键字
+搜索历史
+智能视觉
+花费
+智能创作云
+热门搜索
+扣子
+火山方舟
+豆包大模型
+语音合成
+云服务器
+文档
+备案
+控制台
+z
+zhaoweibo.0820 / eps_yxd_group
+账号管理
+账号ID : 2108323502
+联邦登陆
+企业认证
+费用中心
+可用余额¥ 0.00
+充值汇款
+账户总览
+账单详情
+费用分析
+发票管理
+权限与安全
+安全设置
+访问控制
+操作审计
+API 访问密钥
+工具与其他
+公测申请
+资源管理
+配额中心
+伙伴控制台
+待办事项
+待支付
+0
+待续费
+0
+待处理工单
+0
+未读消息
+0
+即梦AI
+文档首页
+/
+即梦AI
+/
+即梦AI-视频生成
+/
+OmniHuman1.5
+/
+调用步骤3：视频生成
+在本产品文档中搜索
+调用步骤3：视频生成
+最近更新时间：2025.09.25 17:37:19
+首次发布时间：2025.09.17 14:05:01
+我的收藏
+有用
+无用
+接口简介​
+OmniHuman1.5（即梦同源数字人模型），该模型可根据用户上传的单张图片+音频，生成与图片对应的视频效果。支持输入任意画幅包含人物或其他主体（宠物、动漫等）的图片，结合音频，生成高质量的视频。​
+人物的情绪、动作与音频具有强关联性，支持通过提示词（prompt）对画面、动作、运镜进行调整。同时OmniHuman1.5对动漫、宠物等形象支持较好，允许指定讲话人/主体，可广泛应用于内容表达、唱歌和表演等场景。​
+相较于上一代模型，OmniHuman1.5 在运动自然度和结构稳定性提升明显，在人物/主体的运动表现力和画面质量上更优。可以广泛应用于制作剧情对话、多人对话/对唱、商品交互、漫剧等内容。对比其他视频通用模型，OmniHuman 数字人大模型在人物/主体的剧情演绎效果上极具优势。​
+接入说明​
+请求说明​
+​
+名称​
+内容​
+接口地址​
+https://visual.volcengineapi.com​
+请求方式​
+POST​
+Content-Type​
+application/json​
+​
+提交任务​
+提交任务请求参数​
+Query参数​
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVSubmitTask&Version=2022-08-31​
+​
+参数​
+类型​
+可选/必选​
+说明​
+Action​
+string​
+必选​
+接口名，取值：CVSubmitTask​
+Version​
+string​
+必选​
+版本号，取值：2022-08-31​
+​
+Header参数​
+注意​
+本服务固定值：Region为cn-north-1，Service为cv​
+主要用于鉴权，详见 公共参数 - 签名参数 - 在Header中的场景部分​
+Body参数​
+注意​
+业务请求参数，放到request.body中，MIME-Type为application/json​
+​
+名称​
+类型​
+必选​
+描述​
+req_key​
+string​
+必选​
+服务标识​
+取固定值: jimeng_realman_avatar_picture_omni_v15​
+image_url​
+string​
+必选​
+人像图片URL链接​
+mask_url​
+array of string​
+可选​
+mask图URL列表​
+如果需要指定图片中的某个主体说话，可通过调用步骤2：主体检测获取对应主体的mask图传入​
+audio_url​
+string​
+必选​
+音频URL​
+音频时长必须小于35秒，过长情况下提交任务正常，查询任务会报错如下：​
+​
+{​
+    "code": 50215,​
+    "data": null,​
+    "message": "Input invalid for this service.",​
+    "request_id": "2025092517155016D925474BBC35F63896",​
+    "status": 50215,​
+    "time_elapsed": "28.911171ms"​
+}​
+​
+seed​
+int​
+可选​
+随机种子，作为确定扩散初始状态的基础，默认-1（随机）。若随机种子为相同正整数且其他参数均一致，则生成内容极大概率效果一致​
+默认值：-1​
+prompt​
+string​
+可选​
+提示词，仅限中文、英语、日语、韩语、墨西哥语、印尼语​
+pe_fast_mode​
+bool​
+可选​
+是否启用快速模式​
+开启后会通过牺牲部分效果加快生成速度，且生成视频的效果会与即梦稍有不同​
+默认值：false​
+​
+提交任务返回参数​
+通用返回参数​
+请参考通用返回字段及错误码​
+业务返回参数​
+重点关注data中以下字段，其他字段为公共返回(可忽略或不做解析)​
+​
+字段​
+类型​
+说明​
+task_id​
+string​
+任务ID，用于查询结果​
+​
+提交任务请求&返回完整示例​
+请求示例：​
+​
+{​
+    "req_key": "jimeng_realman_avatar_picture_omni_v15",​
+    "image_url": "https://xxxxx",​
+    // "mask_url": ["https://xxxxx", ...]​
+    "audio_url": "https://xxxxx"​
+}​
+​
+返回示例：​
+​
+{​
+    "code": 10000,​
+    "data": {​
+        "task_id": "7392616336519610409"​
+    },​
+    "message": "Success",​
+    "request_id": "20240720103939AF0029465CF6A74E51EC",​
+    "status": 10000,​
+    "time_elapsed": "104.852309ms"​
+}​
+​
+查询任务​
+查询任务请求参数​
+Query参数​
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVGetResult&Version=2022-08-31​
+​
+参数​
+类型​
+可选/必选​
+说明​
+Action​
+string​
+必选​
+接口名，固定值：CVGetResult​
+Version​
+string​
+必选​
+版本号，固定值：2022-08-31​
+​
+Header参数​
+注意​
+本服务固定值：Region为cn-north-1，Service为cv​
+主要用于鉴权，详见 公共参数 - 签名参数 - 在Header中的场景部分​
+Body参数​
+注意​
+业务请求参数，放到request.body中，MIME-Type为application/json​
+​
+参数​
+类型​
+可选/必选​
+说明​
+req_key​
+string​
+必选​
+服务标识​
+取固定值: jimeng_realman_avatar_picture_omni_v15​
+task_id​
+string​
+必选​
+任务ID，此字段的取值为提交任务接口的返回​
+​
+查询任务返回参数​
+通用返回参数​
+请参考通用返回字段及错误码​
+业务返回参数​
+说明​
+重点关注data中以下字段，其他字段为公共返回(可忽略或不做解析)​
+​
+参数名​
+参数说明​
+参数示例​
+video_url​
+视频链接（有效期为 1 小时）​
+​
+status​
+任务执行状态​
+in_queue：任务已提交​
+generating：任务已被消费，处理中​
+done：处理完成，成功或者失败，可根据外层code&message进行判断​
+not_found：任务未找到，可能原因是无此任务或任务已过期(12小时)​
+expired：任务已过期，请尝试重新提交任务请求​
+​
+​
+查询任务请求&返回完整示例​
+请求示例：​
+​
+{​
+    "req_key": "jimeng_realman_avatar_picture_omni_v15",​
+    "task_id": "<任务提交接口返回task_id>"​
+}​
+​
+返回示例：​
+​
+{​
+    "code": 10000,​
+    "data": {​
+        "status": "done",​
+        "video_url": "https://xxxx"​
+    },​
+    "message": "Success",​
+    "request_id": "2025061718460554C9B78D23B0BAB45B2A",​
+    "status": 10000,​
+    "time_elapsed": "508.312154ms"​
+}​
+​
+错误码​
+通用错误码​
+请参考通用返回字段及错误码​
+业务错误码​
+​
+HttpCode​
+错误码​
+错误消息​
+描述​
+是否需要重试​
+200​
+10000​
+无​
+请求成功​
+不需要​
+400​
+50411​
+Pre Img Risk Not Pass​
+输入图片前审核未通过​
+不需要​
+400​
+50511​
+Post Img Risk Not Pass​
+输出图片后审核未通过​
+可重试​
+400​
+50412​
+Text Risk Not Pass​
+输入文本前审核未通过​
+不需要​
+400​
+50512​
+Post Text Risk Not Pass​
+输出文本后审核未通过​
+不需要​
+400​
+50413​
+Post Text Risk Not Pass​
+输入文本含敏感词、版权词等审核不通过​
+不需要​
+429​
+50429​
+Request Has Reached API Limit, Please Try Later​
+QPS超限​
+可重试​
+429​
+50430​
+Request Has Reached API Concurrent Limit, Please Try Later​
+并发超限​
+可重试​
+500​
+50500​
+Internal Error​
+内部错误​
+可重试​
+500​
+50501​
+Internal RPC Error​
+内部算法错误​
+可重试​
+​
+​
+接入说明​
+SDK使用说明​
+请参考SDK使用说明​
+HTTP方式接入说明​
+请参考HTTP请求示例​
+​
+​
+接口简介
+接入说明
+请求说明
+提交任务
+提交任务请求参数
+Query参数
+拼接到url后的参数，示例：https://visual.volcengineapi.com?Action=CVSubmitTask&Version=2022-08-31
+Header参数
+Body参数
+提交任务返回参数
+通用返回参数
+业务返回参数
+提交任务请求&返回完整示例
+查询任务
+查询任务请求参数
+Query参数
+Header参数
+Body参数
+查询任务返回参数
+通用返回参数
+业务返回参数
+查询任务请求&返回完整示例
+错误码
+通用错误码
+业务错误码
+接入说明
+SDK使用说明
+HTTP方式接入说明
+鼠标选中内容，快速反馈问题
+选中存在疑惑的内容，即可快速反馈问题，我们将会跟进处理
+不再提示
+好的，知道了
+
+全天候售后服务
+7x24小时专业工程师品质服务
+
+极速服务应答
+秒级应答为业务保驾护航
+
+客户价值为先
+从服务价值到创造客户价值
+
+全方位安全保障
+打造一朵“透明可信”的云
+logo
+关于我们
+为什么选火山
+文档中心
+联系我们
+人才招聘
+云信任中心
+友情链接
+产品
+云服务器
+GPU云服务器
+机器学习平台
+客户数据平台 VeCDP
+飞连
+视频直播
+全部产品
+解决方案
+汽车行业
+金融行业
+文娱行业
+医疗健康行业
+传媒行业
+智慧文旅
+大消费
+服务与支持
+备案服务
+服务咨询
+建议与反馈
+廉洁舞弊举报
+举报平台
+联系我们
+业务咨询：service@volcengine.com
+市场合作：marketing@volcengine.com
+电话：400-850-0030
+地址：北京市海淀区北三环西路甲18号院大钟寺广场1号楼
+
+微信公众号
+
+抖音号
+
+视频号
+© 北京火山引擎科技有限公司 2025 版权所有
+代理域名注册服务机构：新网数码 商中在线
+服务条款
+隐私政策
+更多协议
+
+京公网安备11010802032137号
+京ICP备20018813号-3
+营业执照
+增值电信业务经营许可证京B2-20202418，A2.B1.B2-20202637
+网络文化经营许可证：京网文（2023）4872-140号

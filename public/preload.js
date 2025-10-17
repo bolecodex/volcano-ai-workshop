@@ -46,6 +46,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return ipcRenderer.invoke('query-motion-imitation-task', requestData);
   },
 
+  // Jimeng Motion Imitation API calls via IPC (新版本)
+  submitJimengMotionImitationTask: (requestData) => {
+    console.log('🎭 Preload: Calling submit-jimeng-motion-imitation-task via IPC');
+    return ipcRenderer.invoke('submit-jimeng-motion-imitation-task', requestData);
+  },
+
+  queryJimengMotionImitationTask: (requestData) => {
+    console.log('🔍 Preload: Calling query-jimeng-motion-imitation-task via IPC');
+    return ipcRenderer.invoke('query-jimeng-motion-imitation-task', requestData);
+  },
+
   // 即梦AI 4.0 API calls via IPC
   submitJimeng40Task: (requestData) => {
     console.log('🎨 Preload: Calling submit-jimeng40-task via IPC');
@@ -55,6 +66,32 @@ contextBridge.exposeInMainWorld('electronAPI', {
   queryJimeng40Task: (requestData) => {
     console.log('🔍 Preload: Calling query-jimeng40-task via IPC');
     return ipcRenderer.invoke('query-jimeng40-task', requestData);
+  },
+
+  // OmniHuman1.5 数字人 API calls via IPC
+  submitOmniHumanIdentifyTask: (requestData) => {
+    console.log('🧑 Preload: Calling submit-omnihuman-identify-task via IPC');
+    return ipcRenderer.invoke('submit-omnihuman-identify-task', requestData);
+  },
+
+  queryOmniHumanIdentifyTask: (requestData) => {
+    console.log('🔍 Preload: Calling query-omnihuman-identify-task via IPC');
+    return ipcRenderer.invoke('query-omnihuman-identify-task', requestData);
+  },
+
+  detectOmniHumanSubject: (requestData) => {
+    console.log('🎯 Preload: Calling detect-omnihuman-subject via IPC');
+    return ipcRenderer.invoke('detect-omnihuman-subject', requestData);
+  },
+
+  submitOmniHumanVideoTask: (requestData) => {
+    console.log('🎬 Preload: Calling submit-omnihuman-video-task via IPC');
+    return ipcRenderer.invoke('submit-omnihuman-video-task', requestData);
+  },
+
+  queryOmniHumanVideoTask: (requestData) => {
+    console.log('🔍 Preload: Calling query-omnihuman-video-task via IPC');
+    return ipcRenderer.invoke('query-omnihuman-video-task', requestData);
   },
 
   // 即梦文生图 3.1 API calls via IPC
@@ -118,6 +155,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   computeEmbedding: (requestData) => {
     console.log('🧮 Preload: Calling compute-embedding via IPC');
     return ipcRenderer.invoke('compute-embedding', requestData);
+  },
+
+  // Inpainting涂抹编辑 API calls via IPC
+  submitInpaintingTask: (requestData) => {
+    console.log('🖌️ Preload: Calling submit-inpainting-task via IPC');
+    return ipcRenderer.invoke('submit-inpainting-task', requestData);
   },
 
   // TOS Upload

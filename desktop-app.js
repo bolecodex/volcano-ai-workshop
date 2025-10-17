@@ -350,6 +350,43 @@ function setupIpcHandlers() {
     }
   });
 
+  // Jimeng Motion Imitation IPC handlers (新版本)
+  ipcMain.handle('submit-jimeng-motion-imitation-task', async (event, requestData) => {
+    console.log('🎭 IPC: Submitting Jimeng motion imitation task...');
+    try {
+      const result = await apiService.submitJimengMotionImitationTask(requestData);
+      console.log('✅ IPC: Jimeng motion imitation task submission completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-jimeng-motion-imitation-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-jimeng-motion-imitation-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying Jimeng motion imitation task:', requestData.task_id);
+    try {
+      const result = await apiService.queryJimengMotionImitationTask(requestData);
+      console.log('✅ IPC: Jimeng motion imitation task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-jimeng-motion-imitation-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
   // 即梦AI 4.0 IPC handlers
   ipcMain.handle('submit-jimeng40-task', async (event, requestData) => {
     console.log('🎨 IPC: Submitting Jimeng 4.0 task...');
@@ -377,6 +414,97 @@ function setupIpcHandlers() {
       return result;
     } catch (error) {
       console.error('❌ IPC Error in query-jimeng40-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // OmniHuman1.5 数字人 IPC handlers
+  ipcMain.handle('submit-omnihuman-identify-task', async (event, requestData) => {
+    console.log('🧑 IPC: Submitting OmniHuman identify task');
+    try {
+      const result = await apiService.submitOmniHumanIdentifyTask(requestData);
+      console.log('✅ IPC: OmniHuman identify task submitted');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-omnihuman-identify-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-omnihuman-identify-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying OmniHuman identify task:', requestData.task_id);
+    try {
+      const result = await apiService.queryOmniHumanIdentifyTask(requestData);
+      console.log('✅ IPC: OmniHuman identify task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-omnihuman-identify-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('detect-omnihuman-subject', async (event, requestData) => {
+    console.log('🎯 IPC: Detecting OmniHuman subject');
+    try {
+      const result = await apiService.detectOmniHumanSubject(requestData);
+      console.log('✅ IPC: OmniHuman subject detection completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in detect-omnihuman-subject:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('submit-omnihuman-video-task', async (event, requestData) => {
+    console.log('🎬 IPC: Submitting OmniHuman video task');
+    try {
+      const result = await apiService.submitOmniHumanVideoTask(requestData);
+      console.log('✅ IPC: OmniHuman video task submitted');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-omnihuman-video-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-omnihuman-video-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying OmniHuman video task:', requestData.task_id);
+    try {
+      const result = await apiService.queryOmniHumanVideoTask(requestData);
+      console.log('✅ IPC: OmniHuman video task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-omnihuman-video-task:', error);
       return {
         success: false,
         error: {
@@ -583,6 +711,25 @@ function setupIpcHandlers() {
       return result;
     } catch (error) {
       console.error('❌ IPC Error in compute-embedding:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  // Inpainting涂抹编辑 IPC handler
+  ipcMain.handle('submit-inpainting-task', async (event, requestData) => {
+    console.log('🖌️ IPC: Submitting Inpainting task...');
+    try {
+      const result = await apiService.submitInpaintingTask(requestData);
+      console.log('✅ IPC: Inpainting task completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-inpainting-task:', error);
       return {
         success: false,
         error: {

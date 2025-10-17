@@ -5,8 +5,10 @@ function Sidebar({ activeTab, setActiveTab }) {
   const menuItems = [
     { id: 'dashboard', label: '工作台', icon: 'bi-speedometer2' },
     { id: 'image-generator', label: 'AI 图片生成', icon: 'bi-image' },
+    { id: 'inpainting-editor', label: '智能绘图', icon: 'bi-brush' },
     { id: 'video-generator', label: 'AI 视频生成', icon: 'bi-camera-video' },
     { id: 'motion-imitation', label: '动作模仿', icon: 'bi-person-video2' },
+    { id: 'digital-human', label: '数字人', icon: 'bi-person-video3' },
     { id: 'smart-search', label: '智能搜索', icon: 'bi-search-heart' },
     { id: 'settings', label: '设置', icon: 'bi-gear' },
     { id: 'about', label: '关于', icon: 'bi-info-circle' }

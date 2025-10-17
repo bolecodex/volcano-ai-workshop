@@ -533,7 +533,241 @@ class APIService {
     }
   }
 
-  // 上传文件到TOS (对象存储)
+  // 即梦动作模仿 API - 提交任务（新版本）
+  async submitJimengMotionImitationTask(requestData) {
+    try {
+      console.log('API Service: Submitting Jimeng motion imitation task');
+      
+      // 检查是否提供了AccessKey和SecretKey
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey。请在设置中配置访问密钥。');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVSync2AsyncSubmitTask&Version=2022-08-31`;
+      
+      // 构建请求体 - 新版本接口参数更简洁
+      const requestBody = {
+        req_key: 'jimeng_dream_actor_m1_gen_video_cv',
+        video_url: requestData.video_url,
+        image_url: requestData.image_url
+      };
+
+      const bodyString = JSON.stringify(requestBody);
+
+      console.log('Jimeng Motion Imitation Request:', {
+        url: url,
+        req_key: requestBody.req_key,
+        has_image: !!requestBody.image_url,
+        has_video: !!requestBody.video_url,
+        image_url_preview: requestBody.image_url?.substring(0, 100),
+        video_url_preview: requestBody.video_url?.substring(0, 100),
+        body_size: bodyString.length,
+        body_preview: bodyString.substring(0, 500),
+        accessKeyId: requestData.accessKeyId.substring(0, 8) + '***'
+      });
+
+      // 使用签名V4生成签名
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      
+      // 准备基础headers
+      const baseHeaders = {
+        'Content-Type': 'application/json'
+      };
+      
+      // 生成签名并获取完整的headers
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+      
+      console.log('Signed Headers:', Object.keys(signedHeaders));
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      // 首先获取响应文本
+      const responseText = await response.text();
+      console.log('Jimeng Motion Imitation Submit Raw Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type'),
+        responseText: responseText
+      });
+
+      // 尝试解析JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`API返回了非JSON响应: ${responseText.substring(0, 200)}`);
+      }
+
+      console.log('Jimeng Motion Imitation Submit Parsed Data:', {
+        code: data.code,
+        message: data.message,
+        task_id: data.data?.task_id,
+        full_data: data
+      });
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        console.error('Jimeng Motion Imitation Submit API Error:', {
+          httpStatus: response.status,
+          responseCode: data.code,
+          message: data.message,
+          fullResponse: data
+        });
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      console.log('Jimeng Motion Imitation Submit API Success:', {
+        status: response.status,
+        task_id: data.data?.task_id
+      });
+
+      return {
+        success: true,
+        data: {
+          task_id: data.data?.task_id,
+          message: data.message,
+          ...data.data
+        }
+      };
+
+    } catch (error) {
+      console.error('Jimeng Motion Imitation Submit API Service Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'JIMENG_MOTION_IMITATION_SUBMIT_ERROR'
+        }
+      };
+    }
+  }
+
+  // 即梦动作模仿 API - 查询任务（新版本）
+  async queryJimengMotionImitationTask(requestData) {
+    try {
+      console.log('API Service: Querying Jimeng motion imitation task:', requestData.task_id);
+      
+      // 检查是否提供了AccessKey和SecretKey
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey。请在设置中配置访问密钥。');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVSync2AsyncGetResult&Version=2022-08-31`;
+      
+      const requestBody = {
+        req_key: 'jimeng_dream_actor_m1_gen_video_cv',
+        task_id: requestData.task_id
+      };
+
+      const bodyString = JSON.stringify(requestBody);
+      
+      console.log('Jimeng Motion Imitation Query Request:', {
+        url: url,
+        req_key: requestBody.req_key,
+        task_id: requestBody.task_id,
+        body_preview: bodyString,
+        accessKeyId: requestData.accessKeyId.substring(0, 8) + '***'
+      });
+
+      // 使用签名V4生成签名
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      
+      // 准备基础headers
+      const baseHeaders = {
+        'Content-Type': 'application/json'
+      };
+      
+      // 生成签名并获取完整的headers
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      const responseText = await response.text();
+      
+      console.log('Jimeng Motion Imitation Query Raw Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type'),
+        responseText: responseText
+      });
+      
+      // 尝试解析JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`API返回了非JSON响应: ${responseText.substring(0, 200)}`);
+      }
+
+      console.log('Jimeng Motion Imitation Query Parsed Data:', {
+        code: data.code,
+        message: data.message,
+        status: data.data?.status,
+        has_video_url: !!data.data?.video_url,
+        full_data: data
+      });
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        console.error('Jimeng Motion Imitation Query API Error:', {
+          httpStatus: response.status,
+          responseCode: data.code,
+          message: data.message,
+          requestId: data.request_id,
+          fullResponse: data
+        });
+        
+        // 为500错误提供额外信息
+        if (response.status === 500 || data.code === 50500) {
+          console.warn('⚠️ 500 Internal Error - 可能原因：');
+          console.warn('1. 任务刚提交，系统还在初始化');
+          console.warn('2. API服务端暂时性故障');
+          console.warn('3. 输入参数有问题导致处理失败');
+          console.warn('建议：等待1-2分钟后重试，或检查输入URL是否可访问');
+        }
+        
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      console.log('Jimeng Motion Imitation Query API Success:', {
+        status: response.status,
+        task_status: data.data?.status,
+        has_video: !!data.data?.video_url
+      });
+
+      return {
+        success: true,
+        data: {
+          status: data.data?.status,
+          video_url: data.data?.video_url,
+          message: data.data?.message || data.message,
+          ...data.data
+        }
+      };
+
+    } catch (error) {
+      console.error('Jimeng Motion Imitation Query API Service Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'JIMENG_MOTION_IMITATION_QUERY_ERROR'
+        }
+      };
+    }
+  }
+
+  // 上传文件到TOS (对象存储) - 使用官方SDK
   async uploadToTOS(fileData, config) {
     try {
       console.log('API Service: Uploading file to TOS...', {
@@ -547,48 +781,50 @@ class APIService {
         throw new Error('TOS配置不完整。请在设置中配置 Bucket 名称和访问密钥。');
       }
 
+      // 动态导入TOS SDK
+      const { TosClient } = require('@volcengine/tos-sdk');
+
       // 生成唯一文件名
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(7);
       const fileExt = fileData.name.split('.').pop();
       const objectKey = `motion-imitation/${timestamp}-${randomStr}.${fileExt}`;
 
-      // TOS上传端点
+      // 创建TOS客户端
       const region = config.region || 'cn-beijing';
-      const tosEndpoint = config.endpoint || `https://${config.bucket}.tos-${region}.volces.com`;
-      const uploadUrl = `${tosEndpoint}/${objectKey}`;
+      const client = new TosClient({
+        accessKeyId: config.accessKeyId,
+        accessKeySecret: config.secretAccessKey,
+        region: region,
+        endpoint: config.endpoint || `tos-${region}.volces.com`,
+        secure: true
+      });
 
-      console.log('Upload URL:', uploadUrl);
-
-      // 使用 Signature V4 签名上传（TOS使用service='tos'）
-      const signer = new SignatureV4(config.accessKeyId, config.secretAccessKey, {
-        service: 'tos',
+      console.log('Uploading to TOS:', {
+        bucket: config.bucket,
+        objectKey: objectKey,
         region: region
       });
 
-      // 准备上传headers
-      const baseHeaders = {
-        'Content-Type': fileData.type || 'application/octet-stream'
-      };
-
-      // 生成签名（TOS使用S3兼容的签名）
-      const signedHeaders = signer.sign('PUT', uploadUrl, baseHeaders, fileData.buffer);
-
       // 上传文件
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: signedHeaders,
-        body: fileData.buffer
+      const uploadResult = await client.putObject({
+        bucket: config.bucket,
+        key: objectKey,
+        body: Buffer.from(fileData.buffer),
+        contentType: fileData.type || 'application/octet-stream'
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('TOS Upload Error:', response.status, errorText);
-        throw new Error(`上传失败: HTTP ${response.status} - ${errorText.substring(0, 200)}`);
+      console.log('✅ TOS Upload Result:', {
+        statusCode: uploadResult.statusCode,
+        requestId: uploadResult.requestId
+      });
+
+      if (uploadResult.statusCode !== 200) {
+        throw new Error(`上传失败: HTTP ${uploadResult.statusCode}`);
       }
 
       // 返回可访问的URL
-      const fileUrl = `${tosEndpoint}/${objectKey}`;
+      const fileUrl = `https://${config.bucket}.tos-${region}.volces.com/${objectKey}`;
       
       console.log('✅ File uploaded successfully:', fileUrl);
 
@@ -1629,10 +1865,10 @@ class APIService {
     }
   }
 
-  // TOS - 生成预签名 URL
+  // TOS - 生成预签名 URL (使用官方SDK)
   async getTosPreSignedUrl(requestData) {
     try {
-      console.log('API Service: Generating TOS pre-signed URL...');
+      console.log('API Service: Generating TOS pre-signed URL using official SDK...');
 
       // 检查必需参数
       if (!requestData.accessKeyId || !requestData.secretAccessKey) {
@@ -1654,76 +1890,36 @@ class APIService {
       const [, bucket, objectKey] = match;
       
       // TOS 配置
-      const endpoint = requestData.endpoint || 'tos-cn-beijing.volces.com';
       const region = requestData.region || 'cn-beijing';
       const expiresIn = requestData.expiresIn || 3600; // 默认1小时有效期
 
       console.log('TOS Pre-signed URL Request:', {
         bucket,
         objectKey: objectKey.substring(0, 50),
-        endpoint,
         region,
         expiresIn
       });
 
-      // 生成预签名 URL
-      const crypto = require('crypto');
-      const now = new Date();
-      const dateStamp = now.toISOString().split('T')[0].replace(/-/g, '');
-      const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+      // 使用官方 SDK 生成预签名 URL
+      const { TosClient } = require('@volcengine/tos-sdk');
       
-      // 凭证范围
-      const credentialScope = `${dateStamp}/${region}/tos/request`;
-      const credential = `${requestData.accessKeyId}/${credentialScope}`;
-      
-      // 构造查询参数（不包含签名）
-      const queryParams = new URLSearchParams({
-        'X-Tos-Algorithm': 'TOS4-HMAC-SHA256',
-        'X-Tos-Credential': credential,
-        'X-Tos-Date': amzDate,
-        'X-Tos-Expires': expiresIn.toString(),
-        'X-Tos-SignedHeaders': 'host'
+      const client = new TosClient({
+        accessKeyId: requestData.accessKeyId,
+        accessKeySecret: requestData.secretAccessKey,
+        region: region,
+        bucket: bucket
       });
-      
-      // 规范化请求字符串
-      const canonicalUri = `/${objectKey}`;
-      const canonicalQueryString = queryParams.toString();
-      const canonicalHeaders = `host:${bucket}.${endpoint}\n`;
-      const signedHeaders = 'host';
-      const payloadHash = 'UNSIGNED-PAYLOAD';
-      
-      const canonicalRequest = [
-        'GET',
-        canonicalUri,
-        canonicalQueryString,
-        canonicalHeaders,
-        signedHeaders,
-        payloadHash
-      ].join('\n');
-      
-      // 生成待签名字符串
-      const canonicalRequestHash = crypto.createHash('sha256').update(canonicalRequest).digest('hex');
-      const stringToSign = [
-        'TOS4-HMAC-SHA256',
-        amzDate,
-        credentialScope,
-        canonicalRequestHash
-      ].join('\n');
-      
-      // 计算签名
-      const kDate = crypto.createHmac('sha256', `TOS4${requestData.secretAccessKey}`).update(dateStamp).digest();
-      const kRegion = crypto.createHmac('sha256', kDate).update(region).digest();
-      const kService = crypto.createHmac('sha256', kRegion).update('tos').digest();
-      const kSigning = crypto.createHmac('sha256', kService).update('request').digest();
-      const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
-      
-      // 添加签名到查询参数
-      queryParams.append('X-Tos-Signature', signature);
-      
-      // 构造最终的预签名 URL
-      const signedUrl = `https://${bucket}.${endpoint}${canonicalUri}?${queryParams.toString()}`;
 
-      console.log('✅ TOS Pre-signed URL generated successfully');
+      // 生成预签名 URL
+      const signedUrl = await client.getPreSignedUrl({
+        bucket: bucket,
+        key: objectKey,
+        expires: expiresIn,
+        method: 'GET'
+      });
+
+      console.log('✅ TOS Pre-signed URL generated successfully using SDK');
+      console.log('🔗 Signed URL:', signedUrl.substring(0, 100) + '...');
 
       return {
         success: true,
@@ -1737,6 +1933,7 @@ class APIService {
 
     } catch (error) {
       console.error('TOS Pre-signed URL Error:', error.message);
+      console.error('Error details:', error);
       return {
         success: false,
         error: {
@@ -2105,6 +2302,471 @@ class APIService {
         error: {
           message: error.message,
           code: 'COMPUTE_EMBEDDING_ERROR'
+        }
+      };
+    }
+  }
+  // OmniHuman1.5 - 步骤1：主体识别
+  async submitOmniHumanIdentifyTask(requestData) {
+    try {
+      console.log('API Service: Submitting OmniHuman identify task');
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVSubmitTask&Version=2022-08-31`;
+      
+      const requestBody = {
+        req_key: 'jimeng_realman_avatar_picture_create_role_omni_v15',
+        image_url: requestData.image_url
+      };
+
+      const bodyString = JSON.stringify(requestBody);
+      
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      const responseText = await response.text();
+      console.log('OmniHuman Identify Submit Response:', responseText.substring(0, 200));
+
+      const data = JSON.parse(responseText);
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      return {
+        success: true,
+        data: {
+          task_id: data.data?.task_id,
+          ...data.data
+        }
+      };
+    } catch (error) {
+      console.error('OmniHuman Identify Submit Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'OMNIHUMAN_IDENTIFY_ERROR'
+        }
+      };
+    }
+  }
+
+  // OmniHuman1.5 - 步骤1：查询主体识别结果
+  async queryOmniHumanIdentifyTask(requestData) {
+    try {
+      console.log('API Service: Querying OmniHuman identify task:', requestData.task_id);
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVGetResult&Version=2022-08-31`;
+      
+      const requestBody = {
+        req_key: 'jimeng_realman_avatar_picture_create_role_omni_v15',
+        task_id: requestData.task_id
+      };
+
+      const bodyString = JSON.stringify(requestBody);
+      
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      // 解析resp_data中的status
+      let hasSubject = false;
+      if (data.data?.resp_data) {
+        try {
+          const respData = JSON.parse(data.data.resp_data);
+          hasSubject = respData.status === 1;
+        } catch (e) {
+          console.warn('Failed to parse resp_data:', e);
+        }
+      }
+
+      return {
+        success: true,
+        data: {
+          status: data.data?.status,
+          has_subject: hasSubject,
+          resp_data: data.data?.resp_data,
+          ...data.data
+        }
+      };
+    } catch (error) {
+      console.error('OmniHuman Identify Query Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'OMNIHUMAN_IDENTIFY_QUERY_ERROR'
+        }
+      };
+    }
+  }
+
+  // OmniHuman1.5 - 步骤2：主体检测（同步接口）
+  async detectOmniHumanSubject(requestData) {
+    try {
+      console.log('API Service: Detecting OmniHuman subject');
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVProcess&Version=2022-08-31`;
+      
+      const requestBody = {
+        req_key: 'jimeng_realman_avatar_object_detection',
+        image_url: requestData.image_url
+      };
+
+      const bodyString = JSON.stringify(requestBody);
+      
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      const responseText = await response.text();
+      console.log('OmniHuman Detect Response:', responseText.substring(0, 200));
+
+      const data = JSON.parse(responseText);
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      // 解析resp_data获取mask URLs
+      let maskUrls = [];
+      if (data.data?.resp_data) {
+        try {
+          const respData = JSON.parse(data.data.resp_data);
+          if (respData.object_detection_result?.mask?.url) {
+            maskUrls = respData.object_detection_result.mask.url;
+          }
+        } catch (e) {
+          console.warn('Failed to parse resp_data:', e);
+        }
+      }
+
+      return {
+        success: true,
+        data: {
+          mask_urls: maskUrls,
+          resp_data: data.data?.resp_data,
+          ...data.data
+        }
+      };
+    } catch (error) {
+      console.error('OmniHuman Detect Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'OMNIHUMAN_DETECT_ERROR'
+        }
+      };
+    }
+  }
+
+  // OmniHuman1.5 - 步骤3：提交视频生成任务
+  async submitOmniHumanVideoTask(requestData) {
+    try {
+      console.log('API Service: Submitting OmniHuman video task');
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVSubmitTask&Version=2022-08-31`;
+      
+      const requestBody = {
+        req_key: 'jimeng_realman_avatar_picture_omni_v15',
+        image_url: requestData.image_url,
+        audio_url: requestData.audio_url
+      };
+
+      // 可选参数
+      if (requestData.mask_url && requestData.mask_url.length > 0) {
+        requestBody.mask_url = requestData.mask_url;
+      }
+      if (requestData.seed !== undefined && requestData.seed !== -1) {
+        requestBody.seed = requestData.seed;
+      }
+      if (requestData.prompt) {
+        requestBody.prompt = requestData.prompt;
+      }
+      if (requestData.pe_fast_mode !== undefined) {
+        requestBody.pe_fast_mode = requestData.pe_fast_mode;
+      }
+
+      const bodyString = JSON.stringify(requestBody);
+      
+      console.log('OmniHuman Video Request:', {
+        has_image: !!requestBody.image_url,
+        has_audio: !!requestBody.audio_url,
+        has_mask: !!requestBody.mask_url,
+        has_prompt: !!requestBody.prompt
+      });
+      
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      const responseText = await response.text();
+      console.log('OmniHuman Video Submit Response:', responseText.substring(0, 200));
+
+      const data = JSON.parse(responseText);
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      return {
+        success: true,
+        data: {
+          task_id: data.data?.task_id,
+          ...data.data
+        }
+      };
+    } catch (error) {
+      console.error('OmniHuman Video Submit Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'OMNIHUMAN_VIDEO_ERROR'
+        }
+      };
+    }
+  }
+
+  // OmniHuman1.5 - 步骤3：查询视频生成结果
+  async queryOmniHumanVideoTask(requestData) {
+    try {
+      console.log('API Service: Querying OmniHuman video task:', requestData.task_id);
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVGetResult&Version=2022-08-31`;
+      
+      const requestBody = {
+        req_key: 'jimeng_realman_avatar_picture_omni_v15',
+        task_id: requestData.task_id
+      };
+
+      const bodyString = JSON.stringify(requestBody);
+      
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+
+      console.log('OmniHuman Video Query Result:', {
+        status: data.data?.status,
+        has_video: !!data.data?.video_url
+      });
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      return {
+        success: true,
+        data: {
+          status: data.data?.status,
+          video_url: data.data?.video_url,
+          ...data.data
+        }
+      };
+    } catch (error) {
+      console.error('OmniHuman Video Query Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'OMNIHUMAN_VIDEO_QUERY_ERROR'
+        }
+      };
+    }
+  }
+
+  // Inpainting涂抹编辑 API - 同步接口
+  async submitInpaintingTask(requestData) {
+    try {
+      console.log('API Service: Submitting Inpainting task');
+      
+      // 检查是否提供了AccessKey和SecretKey
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey。请在设置中配置访问密钥。');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVProcess&Version=2022-08-31`;
+      
+      // 构建请求体
+      const requestBody = {
+        req_key: 'img2img_inpainting_edit_zi2i',
+        custom_prompt: requestData.custom_prompt,
+        scale: requestData.scale || 5,
+        seed: requestData.seed !== undefined ? requestData.seed : -1,
+        steps: requestData.steps || 25
+      };
+
+      // 添加图片输入（二选一）
+      if (requestData.binary_data_base64 && requestData.binary_data_base64.length > 0) {
+        requestBody.binary_data_base64 = requestData.binary_data_base64;
+      } else if (requestData.image_urls && requestData.image_urls.length > 0) {
+        requestBody.image_urls = requestData.image_urls;
+      } else {
+        throw new Error('必须提供图片输入（binary_data_base64 或 image_urls）');
+      }
+
+      // 添加可选参数
+      if (requestData.return_url !== undefined) {
+        requestBody.return_url = requestData.return_url;
+      }
+
+      const bodyString = JSON.stringify(requestBody);
+
+      console.log('Inpainting Request:', {
+        url: url,
+        req_key: requestBody.req_key,
+        has_binary_data: !!requestBody.binary_data_base64,
+        has_image_urls: !!requestBody.image_urls,
+        prompt: requestBody.custom_prompt,
+        body_size: bodyString.length,
+        accessKeyId: requestData.accessKeyId.substring(0, 8) + '***'
+      });
+
+      // 使用签名V4生成签名
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      
+      // 准备基础headers
+      const baseHeaders = {
+        'Content-Type': 'application/json'
+      };
+      
+      // 生成签名并获取完整的headers
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+      
+      console.log('Signed Headers:', Object.keys(signedHeaders));
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+
+      // 首先获取响应文本
+      const responseText = await response.text();
+      console.log('Inpainting Submit Raw Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type'),
+        responseText: responseText.substring(0, 500)
+      });
+
+      // 尝试解析JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`API返回了非JSON响应: ${responseText.substring(0, 200)}`);
+      }
+
+      console.log('Inpainting Submit Parsed Data:', {
+        code: data.code,
+        message: data.message,
+        has_images: !!(data.data?.image_urls || data.data?.binary_data_base64),
+        full_data: data
+      });
+
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        console.error('Inpainting Submit API Error:', {
+          httpStatus: response.status,
+          responseCode: data.code,
+          message: data.message,
+          fullResponse: data
+        });
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      console.log('Inpainting Submit API Success:', {
+        status: response.status,
+        has_images: !!(data.data?.image_urls || data.data?.binary_data_base64)
+      });
+
+      return {
+        success: true,
+        data: {
+          image_urls: data.data?.image_urls,
+          binary_data_base64: data.data?.binary_data_base64,
+          request_id: data.data?.request_id,
+          message: data.message,
+          ...data.data
+        }
+      };
+
+    } catch (error) {
+      console.error('Inpainting Submit API Service Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'INPAINTING_SUBMIT_ERROR'
         }
       };
     }

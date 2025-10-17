@@ -9,6 +9,8 @@ import ImageGenerator from './components/ImageGenerator';
 import VideoGenerator from './components/VideoGenerator';
 import MotionImitation from './components/MotionImitation';
 import SmartSearch from './components/SmartSearch';
+import InpaintingEditor from './components/InpaintingEditor';
+import DigitalHuman from './components/DigitalHuman';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -35,10 +37,14 @@ function App() {
         return <Dashboard electronInfo={electronInfo} />;
       case 'image-generator':
         return <ImageGenerator />;
+      case 'inpainting-editor':
+        return <InpaintingEditor />;
       case 'video-generator':
         return <VideoGenerator />;
       case 'motion-imitation':
         return <MotionImitation />;
+      case 'digital-human':
+        return <DigitalHuman />;
       case 'smart-search':
         return <SmartSearch />;
       case 'settings':
