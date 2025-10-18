@@ -39,33 +39,45 @@ function SmartSearch() {
 
   // 加载配置
   useEffect(() => {
-    const loadSettings = () => {
-      const keys = storage.getAccessKeys();
-      if (keys.accessKeyId) setAccessKeyId(keys.accessKeyId);
-      if (keys.secretAccessKey) setSecretAccessKey(keys.secretAccessKey);
-      
-      const savedHistory = localStorage.getItem('smartSearchHistory');
-      if (savedHistory) setSearchHistory(JSON.parse(savedHistory));
-      
-      const savedCollection = localStorage.getItem('vikingdb_collection');
-      if (savedCollection) setCollectionName(savedCollection);
-      
-      const savedIndex = localStorage.getItem('vikingdb_index');
-      if (savedIndex) setIndexName(savedIndex);
+    const loadSettings = async () => {
+      try {
+        const keys = await storage.getAccessKeys();
+        if (keys.accessKeyId) setAccessKeyId(keys.accessKeyId);
+        if (keys.secretAccessKey) setSecretAccessKey(keys.secretAccessKey);
+        
+        const savedHistory = await storage.getItem('smartSearchHistory', []);
+        if (savedHistory) setSearchHistory(savedHistory);
+        
+        const savedCollection = await storage.getItem('vikingdb_collection', '');
+        if (savedCollection) setCollectionName(savedCollection);
+        
+        const savedIndex = await storage.getItem('vikingdb_index', '');
+        if (savedIndex) setIndexName(savedIndex);
+      } catch (error) {
+        console.error('加载配置失败:', error);
+      }
     };
     loadSettings();
   }, []);
 
   // 保存配置
-  const saveCollectionConfig = () => {
-    localStorage.setItem('vikingdb_collection', collectionName);
-    localStorage.setItem('vikingdb_index', indexName);
+  const saveCollectionConfig = async () => {
+    try {
+      await storage.setItem('vikingdb_collection', collectionName);
+      await storage.setItem('vikingdb_index', indexName);
+    } catch (error) {
+      console.error('保存配置失败:', error);
+    }
   };
 
   // 保存历史
-  const saveHistory = (newHistory) => {
+  const saveHistory = async (newHistory) => {
     setSearchHistory(newHistory);
-    localStorage.setItem('smartSearchHistory', JSON.stringify(newHistory));
+    try {
+      await storage.setItem('smartSearchHistory', newHistory);
+    } catch (error) {
+      console.error('保存历史失败:', error);
+    }
   };
 
   // 生成 TOS 预签名 URL

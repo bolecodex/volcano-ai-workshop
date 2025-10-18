@@ -1,11 +1,11 @@
-# 🌋 火山AI创作工坊
+# 🌋 火山AI创作工坊 Web版
 
-基于 Electron + React + Bootstrap 构建的全功能 AI 创作桌面应用，集成火山引擎多模态 AI 能力。
+基于 React + Express + Bootstrap 构建的全功能 AI 创作 Web 应用，集成火山引擎多模态 AI 能力。
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Electron](https://img.shields.io/badge/electron-38.1.2-blue.svg)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/react-18.2.0-blue.svg)](https://reactjs.org/)
+[![Express](https://img.shields.io/badge/express-5.1.0-green.svg)](https://expressjs.com/)
 
 ## ✨ 核心功能
 
@@ -39,7 +39,7 @@
 - ✅ **版本选择**: 支持在即梦版本和经典版本间切换
 - ✅ **实时预览**: 任务状态实时更新
 
-### 🧑 数字人 (OmniHuman1.5) ⭐ NEW
+### 🧑 数字人 (OmniHuman1.5) ⭐
 - ✅ **图片+音频生成视频**: 单张图片配合音频生成数字人视频
 - ✅ **多主体支持**: 支持人物、宠物、动漫角色等
 - ✅ **任意画幅**: 突破传统竖屏限制，支持各种比例
@@ -48,12 +48,17 @@
 - ✅ **三步工作流**: 主体识别 → 主体检测（可选） → 视频生成
 - ✅ **快速模式**: 可选快速生成模式
 
-### 🖌️ 智能绘图 (Inpainting) ⭐ NEW
+### 🖌️ 智能绘图 (Inpainting) ⭐
 - ✅ **涂抹编辑**: 使用蒙版图精准编辑图片区域
 - ✅ **智能填充**: AI 智能理解上下文填充内容
 - ✅ **同步生成**: 实时获取编辑结果，无需等待
 - ✅ **参数可调**: 支持调节采样步数、引导强度等
 - ✅ **双重输入**: 支持 URL 或 Base64 格式输入
+
+### 🎞️ 视频指令编辑 ⭐
+- ✅ **文字编辑视频**: 通过文字指令编辑视频内容
+- ✅ **高质量输出**: 支持高清视频输出
+- ✅ **可控参数**: 自定义随机种子和帧数
 
 ### 🔍 智能搜图
 - ✅ **以图搜图**: 上传图片查找相似图片
@@ -70,6 +75,7 @@
 - **Node.js**: >= 14.0.0
 - **npm**: >= 6.0.0
 - **操作系统**: Windows / macOS / Linux
+- **浏览器**: Chrome, Firefox, Safari, Edge (现代浏览器)
 
 ### 1. 克隆项目
 
@@ -93,162 +99,165 @@ npm install
 
 ### 4. 启动应用
 
-#### 推荐方式（智能启动）
+#### 开发模式（推荐）
 ```bash
-npm run app
-# 或
-npm run launch
-```
-
-#### 其他启动方式
-```bash
-# 构建并启动
-npm run desktop
-
-# 快速启动（跳过构建）
-npm run desktop-quick
-
-# 开发模式
 npm run dev
-npm run desktop-dev
 ```
+这会同时启动：
+- React 开发服务器（端口 3000）
+- Express 后端服务器（端口 3001）
 
-## 📦 打包分发
+然后在浏览器中访问 `http://localhost:3000`
 
-### 打包当前平台
+#### 单独启动前端
 ```bash
-npm run dist
+npm start
 ```
 
-### 打包特定平台
+#### 单独启动后端
 ```bash
-npm run dist-mac    # macOS (DMG + ZIP)
-npm run dist-win    # Windows (NSIS)
-npm run dist-linux  # Linux (AppImage)
+npm run server
 ```
 
-打包文件输出到 `dist/` 目录。
+#### 生产模式
+```bash
+# 构建前端并启动后端
+npm run prod
+
+# 或使用
+npm run serve
+```
+
+生产模式会构建优化后的静态文件并启动服务器，访问 `http://localhost:3001`
 
 ## 🏗️ 技术架构
 
 ### 核心技术栈
 - **前端框架**: React 18.2.0
 - **UI 库**: Bootstrap 5.2.3 + React-Bootstrap 2.7.0
-- **桌面框架**: Electron 38.1.2
-- **构建工具**: React Scripts 5.0.1
-- **打包工具**: Electron Builder 23.6.0
+- **后端框架**: Express 5.1.0
+- **HTTP 客户端**: Fetch API
+- **状态管理**: React Hooks + LocalStorage
 
-### IPC 通信架构
-
-应用采用安全的 IPC (Inter-Process Communication) 架构：
+### 架构设计
 
 ```
-┌─────────────────┐         ┌──────────────────┐
-│  渲染进程 (React) │ ←──IPC──→ │  主进程 (Node.js) │
-│  用户界面        │         │  API 服务        │
-└─────────────────┘         └──────────────────┘
-         ↓                            ↓
-    Preload.js                  api-service.js
-    (安全桥接)                   (API 调用)
+┌─────────────────────────────────────────────────────────┐
+│                    浏览器 (Browser)                       │
+│  ┌────────────────────────────────────────────────────┐ │
+│  │         React 前端应用 (Port 3000)                   │ │
+│  │  - 用户界面组件                                       │ │
+│  │  - API 客户端 (apiClient.js)                        │ │
+│  │  - 本地存储管理                                       │ │
+│  └────────────────┬───────────────────────────────────┘ │
+└───────────────────┼─────────────────────────────────────┘
+                    │ HTTP API 调用
+                    ▼
+┌─────────────────────────────────────────────────────────┐
+│         Express 后端服务器 (Port 3001)                    │
+│  ┌────────────────────────────────────────────────────┐ │
+│  │  路由层 (server/index.js)                           │ │
+│  │  - RESTful API 端点                                 │ │
+│  │  - 请求验证和错误处理                                │ │
+│  └────────────────┬───────────────────────────────────┘ │
+│  ┌────────────────▼───────────────────────────────────┐ │
+│  │  服务层 (api-service.js)                            │ │
+│  │  - 火山引擎 API 调用                                 │ │
+│  │  - 签名生成 (SignatureV4)                           │ │
+│  │  - TOS 文件上传                                      │ │
+│  └────────────────┬───────────────────────────────────┘ │
+└───────────────────┼─────────────────────────────────────┘
+                    │
+                    ▼
+        ┌─────────────────────────┐
+        │   火山引擎 API 服务        │
+        │  - ARK API              │
+        │  - Visual API           │
+        │  - VikingDB API         │
+        │  - TOS 对象存储          │
+        └─────────────────────────┘
 ```
 
-### 已实现的 IPC 接口
+### API 端点总览
 
 #### 图片生成
-- `generateImages` - 同步生成图片 (Seedream 4.0)
-- `submitJimeng40Task` - 提交即梦 4.0 任务
-- `queryJimeng40Task` - 查询即梦 4.0 任务
-- `submitJimeng31Task` - 提交即梦 3.1 任务
-- `queryJimeng31Task` - 查询即梦 3.1 任务
-- `submitJimengI2I30Task` - 提交即梦图生图 3.0 任务
-- `queryJimengI2I30Task` - 查询即梦图生图 3.0 任务
+- `POST /api/v3/images/generations` - Seedream 4.0 图片生成
+- `POST /api/jimeng40/submit` - 即梦 4.0 提交任务
+- `POST /api/jimeng40/query` - 即梦 4.0 查询任务
+- `POST /api/jimeng31/submit` - 即梦 3.1 提交任务
+- `POST /api/jimeng31/query` - 即梦 3.1 查询任务
+- `POST /api/jimeng-i2i30/submit` - 即梦图生图 3.0 提交
+- `POST /api/jimeng-i2i30/query` - 即梦图生图 3.0 查询
 
 #### 视频生成
-- `createVideoTask` - 创建视频生成任务
-- `getVideoTask` - 获取单个任务信息
-- `getVideoTasks` - 批量查询任务
-- `deleteVideoTask` - 删除任务
-- `submitJimeng30ProVideoTask` - 提交即梦 3.0 Pro 视频任务
-- `queryJimeng30ProVideoTask` - 查询即梦 3.0 Pro 视频任务
+- `POST /api/video/create` - 创建视频任务
+- `GET /api/video/tasks/:id` - 查询单个任务
+- `GET /api/video/tasks` - 查询任务列表
+- `DELETE /api/video/tasks/:id` - 删除任务
+- `POST /api/jimeng30pro-video/submit` - 即梦 3.0 Pro 提交
+- `POST /api/jimeng30pro-video/query` - 即梦 3.0 Pro 查询
 
 #### 动作模仿
-- `submitMotionImitationTask` - 提交动作模仿任务（经典版本）
-- `queryMotionImitationTask` - 查询任务结果（经典版本）
-- `submitJimengMotionImitationTask` - 提交即梦动作模仿任务
-- `queryJimengMotionImitationTask` - 查询即梦动作模仿任务
+- `POST /api/motion-imitation/submit` - 经典版提交
+- `POST /api/motion-imitation/query` - 经典版查询
+- `POST /api/jimeng-motion-imitation/submit` - 即梦版提交
+- `POST /api/jimeng-motion-imitation/query` - 即梦版查询
 
 #### 数字人 (OmniHuman1.5)
-- `submitOmniHumanIdentifyTask` - 提交主体识别任务
-- `queryOmniHumanIdentifyTask` - 查询主体识别结果
-- `detectOmniHumanSubject` - 主体检测（同步）
-- `submitOmniHumanVideoTask` - 提交视频生成任务
-- `queryOmniHumanVideoTask` - 查询视频生成结果
+- `POST /api/omnihuman/identify/submit` - 主体识别提交
+- `POST /api/omnihuman/identify/query` - 主体识别查询
+- `POST /api/omnihuman/detect` - 主体检测（同步）
+- `POST /api/omnihuman/video/submit` - 视频生成提交
+- `POST /api/omnihuman/video/query` - 视频生成查询
 
-#### 智能绘图 (Inpainting)
-- `submitInpaintingTask` - 提交涂抹编辑任务（同步）
+#### 智能绘图 & 视频编辑
+- `POST /api/inpainting/submit` - Inpainting 涂抹编辑
+- `POST /api/video-edit/submit` - 视频编辑提交
+- `POST /api/video-edit/query` - 视频编辑查询
 
 #### 向量搜索
-- `imageEmbedding` - 图像向量化
-- `searchByMultiModal` - 多模态检索
-- `computeEmbedding` - 向量化计算
-- `upsertVectorData` - 数据写入
-- `getTosPreSignedUrl` - 生成 TOS 预签名 URL
-
-#### 系统功能
-- `uploadToTOS` - 文件上传到对象存储
-- `testConnection` - 测试 API 连接
-- `getAppInfo` - 获取应用信息
+- `POST /api/embedding/image` - 图像向量化
+- `POST /api/search/multimodal` - 多模态检索
+- `POST /api/embedding/compute` - 向量化计算
+- `POST /api/vector/upsert` - 数据写入
+- `POST /api/tos/presigned-url` - TOS 预签名 URL
+- `POST /api/tos/upload` - TOS 文件上传
 
 ## 📁 项目结构
 
 ```
 volcano-ai-workshop/
-├── desktop-app.js              # Electron 主进程（生产）
-├── start-desktop.js            # 智能启动脚本
-├── api-service.js              # API 服务封装
-├── signature-v4.js             # AWS Signature V4 签名
-├── public/
-│   ├── electron.js            # Electron 主进程（开发）
-│   ├── preload.js             # Preload 脚本（安全桥接）
-│   ├── index.html             # HTML 模板
-│   └── logo.svg               # 应用图标
+├── server/
+│   └── index.js              # Express 后端服务器
 ├── src/
-│   ├── App.js                 # React 主组件
-│   ├── index.js               # React 入口
-│   ├── index.css              # 全局样式
-│   ├── components/            # React 组件
-│   │   ├── Header.js          # 顶部导航栏
-│   │   ├── Sidebar.js         # 侧边栏菜单
-│   │   ├── Dashboard.js       # 控制台
-│   │   ├── ImageGenerator.js  # 图片生成
+│   ├── App.js                # React 主组件
+│   ├── index.js              # React 入口
+│   ├── index.css             # 全局样式
+│   ├── components/           # React 组件
+│   │   ├── Header.js         # 顶部导航栏
+│   │   ├── Sidebar.js        # 侧边栏菜单
+│   │   ├── Dashboard.js      # 控制台
+│   │   ├── ImageGenerator.js # 图片生成
 │   │   ├── InpaintingEditor.js # 智能绘图
-│   │   ├── VideoGenerator.js  # 视频生成
+│   │   ├── VideoGenerator.js # 视频生成
+│   │   ├── VideoEditor.js    # 视频编辑
 │   │   ├── MotionImitation.js # 动作模仿
-│   │   ├── DigitalHuman.js    # 数字人
-│   │   ├── SmartSearch.js     # 智能搜图
-│   │   ├── Settings.js        # 设置页面
-│   │   └── About.js           # 关于页面
+│   │   ├── DigitalHuman.js   # 数字人
+│   │   ├── SmartSearch.js    # 智能搜图
+│   │   ├── Settings.js       # 设置页面
+│   │   └── About.js          # 关于页面
 │   └── utils/
-│       └── storage.js         # 本地存储工具
-├── docs/                      # 文档目录
-│   ├── IMAGE_GENERATION_GUIDE.md
-│   ├── IMAGE_SEARCH_GUIDE.md
-│   ├── VIDEO_GENERATOR_USAGE.md
-│   └── ...
-├── build/                     # 构建输出（React）
-├── dist/                      # 打包输出（Electron）
-└── node_modules/              # 依赖包
+│       ├── apiClient.js      # API 客户端
+│       └── storage.js        # 本地存储工具
+├── public/
+│   ├── index.html            # HTML 模板
+│   └── logo.svg              # 应用图标
+├── api-service.js            # API 服务封装
+├── signature-v4.js           # AWS Signature V4 签名
+├── docs/                     # 文档目录
+├── build/                    # 构建输出
+└── node_modules/             # 依赖包
 ```
-
-## 🔒 安全特性
-
-- ✅ **Context Isolation**: 渲染进程和主进程完全隔离
-- ✅ **Node Integration**: 禁用，防止 XSS 攻击
-- ✅ **Remote Module**: 禁用，防止远程代码执行
-- ✅ **Preload 脚本**: 安全的 API 桥接
-- ✅ **防 eval()**: 禁止执行动态代码
-- ✅ **拖拽防护**: 防止恶意文件拖拽
-- ✅ **外部链接**: 阻止未授权的新窗口
 
 ## 🎯 使用指南
 
@@ -351,23 +360,15 @@ volcano-ai-workshop/
 - 📖 [图片生成完整指南](docs/guides/IMAGE_GENERATION_GUIDE.md)
 - 📖 [视频生成使用手册](docs/guides/VIDEO_GENERATOR_USAGE.md)
 - 📖 [智能搜图指南](docs/guides/IMAGE_SEARCH_GUIDE.md)
-- 📖 [数字人使用指南](docs/guides/DIGITAL_HUMAN_GUIDE.md) ⭐ NEW
-- 📖 [智能绘图编辑器指南](docs/guides/INPAINTING_EDITOR_GUIDE.md) ⭐ NEW
-- 📖 [智能绘图快速入门](docs/guides/INPAINTING_QUICKSTART.md) ⭐ NEW
-
-### 技术文档
-- 📖 [OmniHuman1.5 集成文档](docs/changelog/OMNIHUMAN_INTEGRATION.md) ⭐ NEW
-- 📖 [Inpainting 编辑器集成](docs/changelog/INPAINTING_EDITOR_INTEGRATION.md) ⭐ NEW
-- 📖 [即梦动作模仿集成](docs/changelog/JIMENG_MOTION_IMITATION_INTEGRATION.md) ⭐ NEW
-- 📖 [即梦图生图 3.0 集成文档](docs/changelog/JIMENG_I2I_30_INTEGRATION.md)
-- 📖 [TOS 上传修复文档](docs/changelog/TOS_UPLOAD_FIX.md)
-- 📖 [开发指南](docs/dev/DEVELOPMENT_GUIDE.md)
+- 📖 [数字人使用指南](docs/guides/DIGITAL_HUMAN_GUIDE.md)
+- 📖 [智能绘图编辑器指南](docs/guides/INPAINTING_EDITOR_GUIDE.md)
+- 📖 [视频编辑器指南](docs/guides/VIDEO_EDITOR_GUIDE.md)
 
 ### API 文档
-- 📖 [OmniHuman1.5 API](docs/api/OmniHuman1.5.md) ⭐ NEW
-- 📖 [即梦动作模仿 API](docs/api/即梦动作模仿.md) ⭐ NEW
-- 📖 [Inpainting 涂抹编辑 API](docs/api/inpainting涂抹编辑.md) ⭐ NEW
-- 📖 [视频指令编辑 API](docs/api/视频指令编辑.md) ⭐ NEW
+- 📖 [OmniHuman1.5 API](docs/api/OmniHuman1.5.md)
+- 📖 [即梦动作模仿 API](docs/api/即梦动作模仿.md)
+- 📖 [Inpainting 涂抹编辑 API](docs/api/inpainting涂抹编辑.md)
+- 📖 [视频指令编辑 API](docs/api/视频指令编辑.md)
 
 ## 🔧 常见问题
 
@@ -375,69 +376,78 @@ volcano-ai-workshop/
 **A**: 
 1. 确认已安装依赖：`npm install`
 2. 检查 Node.js 版本 >= 14.0.0
-3. 删除 `node_modules` 重新安装
+3. 删除 `node_modules` 和 `package-lock.json` 重新安装
+4. 确保端口 3000 和 3001 未被占用
 
 ### Q2: API 调用失败？
 **A**:
 1. 检查网络连接
 2. 验证 API Key 是否正确
 3. 确认是否配置了 AccessKey（即梦系列需要）
-4. 查看开发者工具控制台的错误信息
+4. 查看浏览器控制台的错误信息
+5. 检查后端服务器是否正常运行
 
-### Q3: 图片生成报错"No handler registered"？
-**A**: 
-- 已修复！确保使用最新版本
-- 如仍有问题，重启应用
-
-### Q4: 如何切换到开发模式？
+### Q3: 如何查看后端日志？
 **A**:
-```bash
-npm run desktop-dev  # 开发模式，不需要构建
-```
+后端服务器的日志会输出到终端。如果使用 `npm run dev`，日志会显示在运行该命令的终端窗口中。
 
-### Q5: 打包后的应用很大？
+### Q4: 如何部署到生产环境？
 **A**:
-- 正常现象，包含了完整的 Electron 和 Node.js 运行时
-- macOS 约 150-200 MB
-- Windows 约 100-150 MB
+1. 构建前端：`npm run build`
+2. 配置环境变量（如果需要）
+3. 启动服务器：`npm run server`
+4. 建议使用 PM2 或 Docker 进行进程管理
+5. 配置 Nginx 作为反向代理
+6. 启用 HTTPS
+
+### Q5: 支持跨域访问吗？
+**A**:
+是的，后端服务器已配置 CORS 支持。如果需要自定义 CORS 设置，可以修改 `server/index.js` 中的 CORS 配置。
 
 ## 🛠️ 开发说明
 
-### 添加新的 IPC 接口
+### 添加新的 API 端点
 
-#### 1. 在主进程注册（public/electron.js）
+#### 1. 在后端添加路由（server/index.js）
 ```javascript
-ipcMain.handle('your-new-function', async (event, requestData) => {
+app.post('/api/your-new-endpoint', async (req, res) => {
   try {
-    const result = await apiService.yourNewFunction(requestData);
-    return result;
+    const result = await apiService.yourNewFunction(req.body);
+    if (result.success) {
+      res.json(result.data);
+    } else {
+      res.status(500).json({ error: result.error });
+    }
   } catch (error) {
-    return {
-      success: false,
-      error: { message: error.message }
-    };
+    res.status(500).json({ error: { code: 'SERVER_ERROR', message: error.message } });
   }
 });
 ```
 
-#### 2. 在 Preload 暴露（public/preload.js）
-```javascript
-contextBridge.exposeInMainWorld('electronAPI', {
-  yourNewFunction: (requestData) => {
-    return ipcRenderer.invoke('your-new-function', requestData);
-  }
-});
-```
-
-#### 3. 在 API 服务实现（api-service.js）
+#### 2. 在 API 服务层实现（api-service.js）
 ```javascript
 async yourNewFunction(requestData) {
-  const response = await fetch(apiUrl, {
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { /* ... */ },
+      body: JSON.stringify(requestData)
+    });
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: { message: error.message } };
+  }
+}
+```
+
+#### 3. 在前端 API 客户端添加方法（src/utils/apiClient.js）
+```javascript
+async yourNewFunction(requestData) {
+  return this.request('/api/your-new-endpoint', {
     method: 'POST',
-    headers: { /* ... */ },
     body: JSON.stringify(requestData)
   });
-  return await response.json();
 }
 ```
 
@@ -449,74 +459,131 @@ const result = await window.electronAPI.yourNewFunction(data);
 ### 热重载开发
 
 ```bash
-# 启动 React 开发服务器（端口 3000）
-npm start
-
-# 另一个终端启动 Electron（监听 3000 端口）
-npm run electron-dev
+# 开发模式会自动启用热重载
+npm run dev
 ```
+
+前端修改会自动刷新浏览器，后端修改需要重启服务器。
 
 ## 📝 脚本命令
 
 | 命令 | 说明 |
 |------|------|
-| `npm start` | 启动 React 开发服务器 |
-| `npm run build` | 构建 React 应用 |
-| `npm run app` | 智能启动桌面应用 |
-| `npm run launch` | 同 app |
-| `npm run desktop` | 构建 + 启动 |
-| `npm run desktop-quick` | 快速启动（跳过构建） |
-| `npm run desktop-dev` | 开发模式启动 |
-| `npm run electron-dev` | React 热重载 + Electron |
-| `npm run dist` | 打包当前平台 |
-| `npm run dist-mac` | 打包 macOS |
-| `npm run dist-win` | 打包 Windows |
-| `npm run dist-linux` | 打包 Linux |
+| `npm start` | 启动 React 开发服务器（仅前端） |
+| `npm run build` | 构建生产版本 |
+| `npm run server` | 启动 Express 后端服务器 |
+| `npm run dev` | 同时启动前端和后端（开发模式） |
+| `npm run prod` | 构建并启动生产服务器 |
+| `npm run serve` | 同 prod |
+| `npm test` | 运行测试 |
 
-## 🎉 最近更新
+## 🎉 版本更新
 
-### v1.2.0 (2025-10-17) ⭐ 重大更新
-**✨ 新功能**
-- 🧑 **OmniHuman1.5 数字人**: 单张图片+音频生成高质量数字人视频
-  - 支持人物、宠物、动漫等多种主体
-  - 三步工作流：识别 → 检测 → 生成
-  - 可选主体检测，指定特定人物说话
-  - 提示词增强，支持多语言
-- 🖌️ **智能绘图 (Inpainting)**: 涂抹编辑功能
-  - AI 智能填充，精准编辑图片区域
-  - 同步接口，实时获取结果
-  - 参数可调：采样步数、引导强度、随机种子
-- 🎭 **即梦动作模仿**: 升级版动作模仿
-  - 更稳定、更逼真的效果
-  - 突破竖屏限制，支持各种画幅
-  - 与经典版本共存，可自由切换
+### v2.0.0 (2025-10-18) 🚀 重大更新
+**✨ 架构升级**
+- 🌐 **从桌面应用转为 Web 应用**: 移除 Electron，改用纯 Web 技术栈
+- 🔄 **前后端分离**: React 前端 + Express 后端
+- 📡 **RESTful API**: HTTP API 替代 IPC 通信
+- 🚀 **更易部署**: 支持云端部署和容器化
 
-**🐛 Bug修复**
-- 修复 TOS 上传 Signature V4 签名问题
-- 修复智能搜索 TOS 403 错误
-- 修复动作模仿 500 Internal Error 处理
-- 修复 storage 工具调用错误
+**🎨 保留所有功能**
+- ✅ 完整的图片生成功能（Seedream 4.0, 即梦系列）
+- ✅ 视频生成和任务管理
+- ✅ 动作模仿（经典版 + 即梦版）
+- ✅ 数字人 (OmniHuman1.5)
+- ✅ 智能绘图 (Inpainting)
+- ✅ 视频指令编辑
+- ✅ 智能搜图和向量数据库
 
-**📚 文档**
-- 新增 OmniHuman1.5 使用指南和集成文档
-- 新增 Inpainting 编辑器指南和快速入门
-- 新增即梦动作模仿集成文档
-- 新增故障排除指南
-- 完善所有 API 文档
+**📦 技术改进**
+- ⚡ 更快的启动速度
+- 🔒 更安全的架构设计
+- 📱 支持移动端浏览器访问
+- 🌍 支持多用户同时使用
+- 🔧 更易于维护和扩展
 
-### v1.0.1 (2025-10-15)
-- ✅ 修复即梦图生图 3.0 的 IPC handler 注册问题
-- ✅ 添加所有缺失的 20 个 IPC handlers
-- ✅ 删除 Seedream 3.0 T2I 和 SeedEdit 3.0 I2I 模型
-- ✅ 优化代码结构，减小打包体积
-- ✅ 完善文档和使用指南
+### v1.2.0 (2025-10-17) - Electron 桌面版
+- 🧑 OmniHuman1.5 数字人
+- 🖌️ 智能绘图 (Inpainting)
+- 🎭 即梦动作模仿
+- 🐛 各种 Bug 修复
 
-### v1.0.0 (2025-10-01)
-- 🎨 完整的图片生成功能
-- 🎬 视频生成和任务管理
-- 🎭 动作模仿功能
-- 🔍 智能搜图功能
-- 🖥️ 原生桌面应用体验
+## 🚀 部署指南
+
+### 使用 Node.js 部署
+
+```bash
+# 1. 构建项目
+npm run build
+
+# 2. 启动服务器
+npm run server
+
+# 3. 访问应用
+# http://your-server-ip:3001
+```
+
+### 使用 PM2 部署
+
+```bash
+# 1. 安装 PM2
+npm install -g pm2
+
+# 2. 构建项目
+npm run build
+
+# 3. 启动应用
+pm2 start server/index.js --name volcano-ai
+
+# 4. 开机自启
+pm2 startup
+pm2 save
+```
+
+### 使用 Docker 部署
+
+创建 `Dockerfile`:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+RUN npm run build
+
+EXPOSE 3001
+
+CMD ["npm", "run", "server"]
+```
+
+构建和运行:
+
+```bash
+docker build -t volcano-ai-workshop .
+docker run -p 3001:3001 volcano-ai-workshop
+```
+
+### 使用 Nginx 反向代理
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
 
 ## 🤝 贡献
 
@@ -535,8 +602,8 @@ npm run electron-dev
 
 ## 🙏 致谢
 
-- [Electron](https://www.electronjs.org/) - 跨平台桌面应用框架
 - [React](https://reactjs.org/) - 用户界面库
+- [Express](https://expressjs.com/) - Web 应用框架
 - [Bootstrap](https://getbootstrap.com/) - UI 组件库
 - [火山引擎](https://www.volcengine.com/) - AI 能力提供商
 
@@ -552,4 +619,4 @@ npm run electron-dev
 
 如果这个项目对你有帮助，请给一个 ⭐️ Star 支持一下！
 
-**享受使用 AI 图片生成器的乐趣！** 🎉
+**Made with ❤️ for AI creators** 🎉

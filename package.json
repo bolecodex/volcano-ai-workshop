@@ -1,8 +1,7 @@
 {
-  "name": "volcengine-ai-studio",
-  "version": "1.0.0",
-  "description": "火山AI创作工坊 - 基于火山引擎API的智能创作平台",
-  "main": "desktop-app.js",
+  "name": "volcano-ai-workshop-web",
+  "version": "2.0.0",
+  "description": "火山AI创作工坊 Web版 - 基于火山引擎API的智能创作平台",
   "homepage": "./",
   "scripts": {
     "start": "react-scripts start",
@@ -10,53 +9,19 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "node server/index.js",
-    "dev-full": "node scripts/start-dev.js",
-    "dev-web": "concurrently \"npm run server\" \"npm start\"",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "desktop": "npm run build && npx electron .",
-    "desktop-dev": "NODE_ENV=development npx electron .",
-    "desktop-start": "npm run build && npx electron .",
-    "desktop-quick": "npx electron .",
-    "app": "node scripts/start-desktop.js",
-    "dev": "npm run desktop-dev",
-    "launch": "node scripts/start-desktop.js",
-    "electron-pack": "npm run build && electron-builder",
-    "preelectron-pack": "npm run build",
-    "dist": "npm run build && electron-builder --publish=never",
-    "dist-mac": "npm run build && electron-builder --mac",
-    "dist-win": "npm run build && electron-builder --win",
-    "dist-linux": "npm run build && electron-builder --linux"
-  },
-  "build": {
-    "appId": "com.volcengine.ai-studio",
-    "productName": "火山AI创作工坊",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "build/**/*",
-      "desktop-app.js",
-      "api-service.js",
-      "signature-v4.js",
-      "public/preload.js",
-      "public/logo.svg",
-      "node_modules/**/*"
-    ],
-    "mac": {
-      "category": "public.app-category.productivity"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
+    "dev": "concurrently \"npm run server\" \"npm start\"",
+    "prod": "npm run build && npm run server",
+    "serve": "npm run build && npm run server"
   },
   "keywords": [
-    "electron",
+    "volcano",
+    "ai",
     "react",
-    "bootstrap"
+    "express",
+    "bootstrap",
+    "image-generation",
+    "video-generation",
+    "digital-human"
   ],
   "author": "Your Name",
   "license": "MIT",
@@ -65,11 +30,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
     "concurrently": "^7.6.0",
-    "electron": "^38.1.2",
-    "electron-builder": "^23.6.0",
-    "http-proxy-middleware": "^3.0.5",
-    "react-scripts": "5.0.1",
-    "wait-on": "^7.0.1"
+    "react-scripts": "5.0.1"
   },
   "dependencies": {
     "@volcengine/tos-sdk": "^2.7.5",
@@ -93,5 +54,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
   }
 }

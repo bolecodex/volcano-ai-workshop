@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 
-function About({ electronInfo }) {
+function About({ appInfo = { isElectron: false, platform: 'web', version: '2.0.0-web' } }) {
   const technologies = [
     { name: 'Electron', version: '38.1.2', description: '跨平台桌面应用框架', color: 'primary' },
     { name: 'React', version: '18.2.0', description: '现代化前端UI框架', color: 'info' },
@@ -148,10 +148,10 @@ function About({ electronInfo }) {
             <Card.Body>
               <div className="version-info">
                 <div className="mb-2">
-                  <strong>运行平台:</strong> {electronInfo.platform || '未知'}
+                  <strong>运行平台:</strong> {appInfo.platform || 'web'}
                 </div>
                 <div className="mb-2">
-                  <strong>运行环境:</strong> {electronInfo.isElectron ? 'Electron 桌面应用' : '网页浏览器'}
+                  <strong>运行环境:</strong> {appInfo.isElectron ? 'Electron 桌面应用' : 'Web 浏览器'}
                 </div>
                 <div className="mb-2">
                   <strong>Node.js 版本:</strong> <span id="node-version">加载中...</span>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Navbar, Nav, Card, Button, Alert, Badge, ProgressBar } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -12,30 +12,39 @@ import SmartSearch from './components/SmartSearch';
 import InpaintingEditor from './components/InpaintingEditor';
 import DigitalHuman from './components/DigitalHuman';
 import VideoEditor from './components/VideoEditor';
+import { webAPI } from './utils/apiClient';
+
+// 设置全局 API 客户端
+window.electronAPI = webAPI;
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [electronInfo, setElectronInfo] = useState({});
+  const [appInfo, setAppInfo] = useState({
+    platform: 'web',
+    isElectron: false,
+    version: '2.0.0-web'
+  });
 
   useEffect(() => {
-    // Check if we're running in Electron
-    if (window.electronAPI) {
-      setElectronInfo({
-        platform: window.electronAPI.platform,
-        isElectron: true
-      });
-    } else {
-      setElectronInfo({
-        platform: 'web',
-        isElectron: false
-      });
-    }
+    // 获取应用信息
+    const fetchAppInfo = async () => {
+      try {
+        const result = await webAPI.getAppInfo();
+        if (result.success) {
+          setAppInfo(result.data);
+        }
+      } catch (error) {
+        console.error('获取应用信息失败:', error);
+      }
+    };
+    
+    fetchAppInfo();
   }, []);
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard electronInfo={electronInfo} />;
+        return <Dashboard appInfo={appInfo} />;
       case 'image-generator':
         return <ImageGenerator />;
       case 'inpainting-editor':
@@ -53,9 +62,9 @@ function App() {
       case 'settings':
         return <Settings />;
       case 'about':
-        return <About electronInfo={electronInfo} />;
+        return <About appInfo={appInfo} />;
       default:
-        return <Dashboard electronInfo={electronInfo} />;
+        return <Dashboard appInfo={appInfo} />;
     }
   };
 
@@ -80,12 +89,7 @@ function App() {
       <footer className="bg-dark text-light text-center py-3 mt-4">
         <Container>
           <p className="mb-0">
-            Built with ❤️ using Electron + React + Bootstrap
-            {electronInfo.isElectron && (
-              <Badge bg="success" className="ms-2">
-                Running in Electron on {electronInfo.platform}
-              </Badge>
-            )}
+            🌋 火山AI创作工坊 Web版 v{appInfo.version} - 基于 React + Express + Bootstrap 构建
           </p>
         </Container>
       </footer>

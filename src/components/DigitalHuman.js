@@ -18,7 +18,7 @@ import {
   ProgressBar,
   ListGroup
 } from 'react-bootstrap';
-import { storage } from '../utils/storage';
+import { storageSync as storage } from '../utils/storageSync';
 
 function DigitalHuman() {
   // 状态管理

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Alert, Badge, ProgressBar, Table } from 'react-bootstrap';
 
-function Dashboard({ electronInfo }) {
+function Dashboard({ appInfo = { isElectron: false, platform: 'web', version: '2.0.0-web' } }) {
   const [stats, setStats] = useState({
     totalProjects: 12,
     activeUsers: 1,
@@ -117,10 +117,16 @@ function Dashboard({ electronInfo }) {
                 <ProgressBar variant="danger" now={78} />
               </div>
 
-              {electronInfo.isElectron && (
+              {appInfo.isElectron ? (
                 <div className="version-info mt-3">
-                  <strong>运行平台:</strong> {electronInfo.platform}<br />
+                  <strong>运行平台:</strong> {appInfo.platform}<br />
                   <strong>运行环境:</strong> Electron 桌面应用
+                </div>
+              ) : (
+                <div className="version-info mt-3">
+                  <strong>运行平台:</strong> {appInfo.platform}<br />
+                  <strong>运行环境:</strong> Web 浏览器<br />
+                  <strong>版本:</strong> {appInfo.version}
                 </div>
               )}
             </Card.Body>

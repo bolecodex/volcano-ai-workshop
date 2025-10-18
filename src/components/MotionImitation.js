@@ -16,7 +16,7 @@ import {
   Table,
   InputGroup
 } from 'react-bootstrap';
-import { storage } from '../utils/storage';
+import { storageSync as storage } from '../utils/storageSync';
 
 function MotionImitation() {
   // 状态管理

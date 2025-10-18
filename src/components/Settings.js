@@ -28,13 +28,26 @@ function Settings() {
 
   // 加载已保存的API凭证和TOS配置
   useEffect(() => {
-    setApiCredentials({
-      apiKey: storage.getApiKey(),
-      accessKeyId: storage.getAccessKeyId(),
-      secretAccessKey: storage.getSecretAccessKey()
-    });
+    const loadCredentials = async () => {
+      try {
+        const apiKey = await storage.getApiKey();
+        const accessKeyId = await storage.getAccessKeyId();
+        const secretAccessKey = await storage.getSecretAccessKey();
+        
+        setApiCredentials({
+          apiKey,
+          accessKeyId,
+          secretAccessKey
+        });
+        
+        const tosConfig = await storage.getTOSConfig();
+        setTosConfig(tosConfig);
+      } catch (error) {
+        console.error('加载配置失败:', error);
+      }
+    };
     
-    setTosConfig(storage.getTOSConfig());
+    loadCredentials();
   }, []);
 
   const handleSettingChange = (key, value) => {
@@ -61,16 +74,16 @@ function Settings() {
     });
   };
 
-  const handleSaveCredentials = () => {
+  const handleSaveCredentials = async () => {
     try {
       // 保存 API Key
       if (apiCredentials.apiKey) {
-        storage.setApiKey(apiCredentials.apiKey);
+        await storage.setApiKey(apiCredentials.apiKey);
       }
       
       // 保存 AccessKey 和 SecretKey
       if (apiCredentials.accessKeyId && apiCredentials.secretAccessKey) {
-        storage.setAccessKeys(apiCredentials.accessKeyId, apiCredentials.secretAccessKey);
+        await storage.setAccessKeys(apiCredentials.accessKeyId, apiCredentials.secretAccessKey);
       }
       
       setCredentialsAlert({ 
@@ -105,10 +118,10 @@ function Settings() {
     }));
   };
 
-  const handleSaveTosConfig = () => {
+  const handleSaveTosConfig = async () => {
     try {
       if (tosConfig.bucket) {
-        storage.setTOSConfig(tosConfig);
+        await storage.setTOSConfig(tosConfig);
         setCredentialsAlert({ 
           show: true, 
           type: 'success', 

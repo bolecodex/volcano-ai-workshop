@@ -23,16 +23,25 @@ function VideoEditor() {
 
   // ===== 初始化 =====
   useEffect(() => {
-    const accessKeyId = storage.getAccessKeyId();
-    const secretAccessKey = storage.getSecretAccessKey();
-    
-    if (!accessKeyId || !secretAccessKey) {
-      showAlert('danger', '请先在设置页面配置 AccessKeyId 和 SecretAccessKey');
-    }
+    const initialize = async () => {
+      try {
+        const accessKeyId = await storage.getAccessKeyId();
+        const secretAccessKey = await storage.getSecretAccessKey();
+        
+        if (!accessKeyId || !secretAccessKey) {
+          showAlert('danger', '请先在设置页面配置 AccessKeyId 和 SecretAccessKey');
+        }
 
-    // 加载任务历史
-    const history = storage.getVideoEditHistory?.() || [];
-    setTaskHistory(history);
+        // 加载任务历史
+        const history = await storage.getVideoEditHistory();
+        setTaskHistory(history || []);
+      } catch (error) {
+        console.error('初始化失败:', error);
+        showAlert('danger', '加载配置失败');
+      }
+    };
+    
+    initialize();
   }, []);
 
   // ===== 辅助函数 =====
@@ -41,13 +50,15 @@ function VideoEditor() {
     setTimeout(() => setAlert({ show: false, variant: '', message: '' }), 5000);
   };
 
-  const saveTaskToHistory = (task) => {
+  const saveTaskToHistory = async (task) => {
     const newHistory = [task, ...taskHistory.slice(0, 19)]; // 保留最近20条
     setTaskHistory(newHistory);
     
-    // 保存到 localStorage
-    if (storage.setVideoEditHistory) {
-      storage.setVideoEditHistory(newHistory);
+    // 保存到 IndexedDB
+    try {
+      await storage.setVideoEditHistory(newHistory);
+    } catch (error) {
+      console.error('保存任务历史失败:', error);
     }
   };
 

@@ -65,15 +65,23 @@ function ImageGenerator() {
 
   // Load API key from storage on component mount
   useEffect(() => {
-    const savedApiKey = storage.getApiKey();
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-    } else {
-      // Set the provided API key and save it
-      const providedApiKey = '07ab6074-ed6e-43e2-8f80-bf6a70fc8b98';
-      setApiKey(providedApiKey);
-      storage.setApiKey(providedApiKey);
-    }
+    const loadApiKey = async () => {
+      try {
+        const savedApiKey = await storage.getApiKey();
+        if (savedApiKey) {
+          setApiKey(savedApiKey);
+        } else {
+          // Set the provided API key and save it
+          const providedApiKey = '07ab6074-ed6e-43e2-8f80-bf6a70fc8b98';
+          setApiKey(providedApiKey);
+          await storage.setApiKey(providedApiKey);
+        }
+      } catch (error) {
+        console.error('加载 API Key 失败:', error);
+      }
+    };
+
+    loadApiKey();
 
     // Check if running in Electron and set proxy status
     if (window.electronAPI) {
@@ -85,9 +93,16 @@ function ImageGenerator() {
 
   // Save API key when it changes
   useEffect(() => {
-    if (apiKey && apiKey.trim()) {
-      storage.setApiKey(apiKey);
-    }
+    const saveApiKey = async () => {
+      if (apiKey && apiKey.trim()) {
+        try {
+          await storage.setApiKey(apiKey);
+        } catch (error) {
+          console.error('保存 API Key 失败:', error);
+        }
+      }
+    };
+    saveApiKey();
   }, [apiKey]);
 
   // 清理即梦4.0轮询interval
