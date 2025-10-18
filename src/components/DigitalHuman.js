@@ -171,14 +171,23 @@ function DigitalHuman() {
     try {
       setIsLoading(true);
       
+      // 获取 TOS 配置和访问密钥
+      const tosConfig = storage.getTOSConfig();
+      const accessKeyId = storage.getAccessKeyId();
+      const secretAccessKey = storage.getSecretAccessKey();
+      
+      // 验证配置是否完整
+      if (!tosConfig.bucket || !accessKeyId || !secretAccessKey) {
+        throw new Error('TOS配置不完整。请在设置中配置 Bucket 名称和访问密钥。');
+      }
+      
       const fileData = await readFileAsArrayBuffer(file);
-      const settings = storage.getSettings();
       
       const config = {
-        bucket: settings.tosBucket || 'zhaoweibo-video-demo',
-        accessKeyId: settings.accessKeyId,
-        secretAccessKey: settings.secretAccessKey,
-        region: settings.tosRegion || 'cn-beijing'
+        bucket: tosConfig.bucket,
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey,
+        region: tosConfig.region || 'cn-beijing'
       };
 
       const uploadData = {
@@ -192,7 +201,7 @@ function DigitalHuman() {
       
       if (result.success) {
         showAlert('success', `${type === 'image' ? '图片' : '音频'}上传成功！`);
-        return result.data.url;
+        return result.url;  // 修复：直接使用 result.url 而不是 result.data.url
       } else {
         throw new Error(result.error?.message || '上传失败');
       }
@@ -233,8 +242,9 @@ function DigitalHuman() {
         return;
       }
 
-      const settings = storage.getSettings();
-      if (!settings.accessKeyId || !settings.secretAccessKey) {
+      const accessKeyId = storage.getAccessKeyId();
+      const secretAccessKey = storage.getSecretAccessKey();
+      if (!accessKeyId || !secretAccessKey) {
         showAlert('danger', '请先在设置中配置访问密钥');
         return;
       }
@@ -242,8 +252,8 @@ function DigitalHuman() {
       // 提交识别任务
       const submitResult = await window.electronAPI.submitOmniHumanIdentifyTask({
         image_url: imageUrl,
-        accessKeyId: settings.accessKeyId,
-        secretAccessKey: settings.secretAccessKey
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
       });
 
       if (!submitResult.success) {
@@ -269,8 +279,8 @@ function DigitalHuman() {
         
         const queryResult = await window.electronAPI.queryOmniHumanIdentifyTask({
           task_id: taskId,
-          accessKeyId: settings.accessKeyId,
-          secretAccessKey: settings.secretAccessKey
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey
         });
 
         if (queryResult.success) {
@@ -324,12 +334,13 @@ function DigitalHuman() {
         return;
       }
 
-      const settings = storage.getSettings();
+      const accessKeyId = storage.getAccessKeyId();
+      const secretAccessKey = storage.getSecretAccessKey();
       
       const result = await window.electronAPI.detectOmniHumanSubject({
         image_url: imageUrl,
-        accessKeyId: settings.accessKeyId,
-        secretAccessKey: settings.secretAccessKey
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
       });
 
       if (result.success) {
@@ -378,8 +389,9 @@ function DigitalHuman() {
         return;
       }
 
-      const settings = storage.getSettings();
-      if (!settings.accessKeyId || !settings.secretAccessKey) {
+      const accessKeyId = storage.getAccessKeyId();
+      const secretAccessKey = storage.getSecretAccessKey();
+      if (!accessKeyId || !secretAccessKey) {
         showAlert('danger', '请先在设置中配置访问密钥');
         return;
       }
@@ -387,8 +399,8 @@ function DigitalHuman() {
       const requestData = {
         image_url: imageUrl,
         audio_url: audioUrl,
-        accessKeyId: settings.accessKeyId,
-        secretAccessKey: settings.secretAccessKey
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
       };
 
       // 添加可选参数
@@ -443,16 +455,17 @@ function DigitalHuman() {
   // 刷新任务状态
   const refreshTask = async (task) => {
     try {
-      const settings = storage.getSettings();
-      if (!settings.accessKeyId || !settings.secretAccessKey) {
+      const accessKeyId = storage.getAccessKeyId();
+      const secretAccessKey = storage.getSecretAccessKey();
+      if (!accessKeyId || !secretAccessKey) {
         showAlert('danger', '请先在设置中配置访问密钥');
         return;
       }
 
       const result = await window.electronAPI.queryOmniHumanVideoTask({
         task_id: task.task_id,
-        accessKeyId: settings.accessKeyId,
-        secretAccessKey: settings.secretAccessKey
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey
       });
 
       if (result.success) {
