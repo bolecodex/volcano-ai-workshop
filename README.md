@@ -12,7 +12,8 @@
 
 ### 🎨 AI 图片生成
 - ✅ **文生图** (Text-to-Image): 使用文字描述生成高质量图片
-- ✅ **图生图** (Image-to-Image): 基于参考图片生成新图片
+- ✅ **图生图** (Image-to-Image): 基于
+参考图片生成新图片
 - ✅ **智能编辑**: 精准执行编辑指令，保持图像完整性
 - ✅ **多图融合**: 最多支持 10 张参考图混合生成
 - ✅ **组图生成**: 一次生成最多 15 张连续图片
@@ -108,6 +109,8 @@ npm run dev
 - Express 后端服务器（端口 3001）
 
 然后在浏览器中访问 `http://localhost:3000`
+
+> 💡 **提示**: 本地代理服务器会自动解决CORS跨域问题。详见 [本地代理使用指南](docs/guides/LOCAL_PROXY_GUIDE.md)
 
 #### 单独启动前端
 ```bash
@@ -363,6 +366,7 @@ volcano-ai-workshop/
 - 📖 [数字人使用指南](docs/guides/DIGITAL_HUMAN_GUIDE.md)
 - 📖 [智能绘图编辑器指南](docs/guides/INPAINTING_EDITOR_GUIDE.md)
 - 📖 [视频编辑器指南](docs/guides/VIDEO_EDITOR_GUIDE.md)
+- 🔄 [本地代理服务器使用指南](docs/guides/LOCAL_PROXY_GUIDE.md) ⭐
 
 ### API 文档
 - 📖 [OmniHuman1.5 API](docs/api/OmniHuman1.5.md)
@@ -387,11 +391,22 @@ volcano-ai-workshop/
 4. 查看浏览器控制台的错误信息
 5. 检查后端服务器是否正常运行
 
-### Q3: 如何查看后端日志？
+### Q3: 遇到 "Failed to fetch" 或 CORS 跨域错误？
+**A**:
+这是浏览器的跨域限制导致的。解决方案：
+1. **确保后端代理服务器正在运行**：
+   ```bash
+   npm run dev  # 或者 npm run server
+   ```
+2. 检查后端服务器状态：访问 `http://localhost:3001/api/health`
+3. **刷新浏览器页面**：按 `Ctrl + F5` 强制刷新
+4. 查看详细解决方案：📖 [本地代理使用指南](docs/guides/LOCAL_PROXY_GUIDE.md)
+
+### Q4: 如何查看后端日志？
 **A**:
 后端服务器的日志会输出到终端。如果使用 `npm run dev`，日志会显示在运行该命令的终端窗口中。
 
-### Q4: 如何部署到生产环境？
+### Q5: 如何部署到生产环境？
 **A**:
 1. 构建前端：`npm run build`
 2. 配置环境变量（如果需要）
@@ -400,7 +415,7 @@ volcano-ai-workshop/
 5. 配置 Nginx 作为反向代理
 6. 启用 HTTPS
 
-### Q5: 支持跨域访问吗？
+### Q6: 支持跨域访问吗？
 **A**:
 是的，后端服务器已配置 CORS 支持。如果需要自定义 CORS 设置，可以修改 `server/index.js` 中的 CORS 配置。
 

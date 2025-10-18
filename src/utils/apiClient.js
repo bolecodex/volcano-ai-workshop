@@ -1,36 +1,41 @@
 /**
  * 前端 API 客户端
- * 直接调用火山引擎云端 API
+ * 通过代理服务器调用火山引擎云端 API
  */
 
-// 火山引擎API基础地址
+// 代理服务器配置
+const PROXY_BASE_URL = 'http://150.5.162.248:8000/proxy/';
+
+// 火山引擎API基础地址（作为target_url参数）
 const VOLCANO_API_BASE_URL = 'https://api-vikingdb.volces.com';  // 向量数据库API
 const ARK_API_BASE_URL = 'https://ark.cn-beijing.volces.com';   // 方舟API
 
 class APIClient {
   constructor() {
-    // 不再使用本地代理，直接连接云端
-    this.baseURL = null;
+    this.proxyURL = PROXY_BASE_URL;
   }
 
   /**
-   * 通用请求方法 - 直接调用云端API
+   * 通用请求方法 - 通过代理服务器调用云端API
    */
   async request(endpoint, options = {}) {
-    // 判断API类型，选择正确的基础URL
-    let baseURL;
+    // 判断API类型，选择正确的目标URL
+    let targetBaseURL;
+    let targetEndpoint = endpoint;
     
     if (endpoint.startsWith('/api/v3/')) {
       // 方舟图片生成API
-      baseURL = ARK_API_BASE_URL;
-      endpoint = endpoint.replace('/api', '');
+      targetBaseURL = ARK_API_BASE_URL;
+      // 保留完整路径，不删除 /api
+      targetEndpoint = endpoint;
     } else if (endpoint.startsWith('/api/video/')) {
       // 方舟视频生成API  
-      baseURL = ARK_API_BASE_URL;
-      endpoint = endpoint.replace('/api/video', '/api/v1/text2video');
+      targetBaseURL = ARK_API_BASE_URL;
+      targetEndpoint = endpoint.replace('/api/video', '/api/v1/text2video');
     } else if (endpoint.startsWith('/api/embedding/') || endpoint.startsWith('/api/search/') || endpoint.startsWith('/api/vector/')) {
       // 向量数据库API
-      baseURL = VOLCANO_API_BASE_URL;
+      targetBaseURL = VOLCANO_API_BASE_URL;
+      targetEndpoint = endpoint;
     } else {
       // 其他API需要通过IPC或本地服务器
       console.warn(`Endpoint ${endpoint} 需要使用 Electron IPC 或配置本地代理服务器`);
@@ -43,7 +48,12 @@ class APIClient {
       };
     }
     
-    const url = `${baseURL}${endpoint}`;
+    // 构建完整的目标URL
+    const targetURL = `${targetBaseURL}${targetEndpoint}`;
+    
+    // 构建代理请求URL
+    const proxyURL = `${this.proxyURL}?target_url=${(targetURL)}`;
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -52,8 +62,14 @@ class APIClient {
       ...options
     };
 
+    console.log('🔄 通过代理请求:', {
+      proxy: this.proxyURL,
+      target: targetURL,
+      finalURL: proxyURL
+    });
+
     try {
-      const response = await fetch(url, config);
+      const response = await fetch(proxyURL, config);
       const data = await response.json();
 
       if (!response.ok) {
