@@ -788,7 +788,9 @@ class APIService {
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(7);
       const fileExt = fileData.name.split('.').pop();
-      const objectKey = `motion-imitation/${timestamp}-${randomStr}.${fileExt}`;
+      // 根据文件类型决定上传目录
+      const folder = fileData.type?.startsWith('video/') ? 'video-edit' : 'motion-imitation';
+      const objectKey = `${folder}/${timestamp}-${randomStr}.${fileExt}`;
 
       // 创建TOS客户端
       const region = config.region || 'cn-beijing';
@@ -823,16 +825,35 @@ class APIService {
         throw new Error(`上传失败: HTTP ${uploadResult.statusCode}`);
       }
 
-      // 返回可访问的URL
-      const fileUrl = `https://${config.bucket}.tos-${region}.volces.com/${objectKey}`;
-      
-      console.log('✅ File uploaded successfully:', fileUrl);
-
-      return {
-        success: true,
-        url: fileUrl,
-        objectKey: objectKey
-      };
+      // 生成预签名URL（24小时有效期，确保后端服务可以访问）
+      try {
+        const preSignedUrl = await client.getPreSignedUrl({
+          bucket: config.bucket,
+          key: objectKey,
+          expires: 86400 // 24小时
+        });
+        
+        console.log('✅ File uploaded successfully with pre-signed URL');
+        
+        return {
+          success: true,
+          url: preSignedUrl,  // 使用预签名URL
+          publicUrl: `https://${config.bucket}.tos-${region}.volces.com/${objectKey}`,  // 标准URL
+          objectKey: objectKey
+        };
+      } catch (signError) {
+        console.warn('⚠️ Failed to generate pre-signed URL, using standard URL:', signError.message);
+        // 如果生成预签名URL失败，回退到标准URL
+        const fileUrl = `https://${config.bucket}.tos-${region}.volces.com/${objectKey}`;
+        
+        console.log('✅ File uploaded successfully:', fileUrl);
+        
+        return {
+          success: true,
+          url: fileUrl,
+          objectKey: objectKey
+        };
+      }
 
     } catch (error) {
       console.error('TOS Upload Service Error:', error.message);
@@ -2767,6 +2788,233 @@ class APIService {
         error: {
           message: error.message,
           code: 'INPAINTING_SUBMIT_ERROR'
+        }
+      };
+    }
+  }
+
+  // ===== 视频编辑 API =====
+  
+  /**
+   * 提交视频编辑任务
+   * @param {Object} requestData - 请求数据
+   * @param {string} requestData.accessKeyId - AccessKeyId
+   * @param {string} requestData.secretAccessKey - SecretAccessKey
+   * @param {string} requestData.prompt - 编辑指令文本
+   * @param {string} requestData.video_url - 视频URL
+   * @param {number} [requestData.seed] - 随机种子，默认-1
+   * @param {number} [requestData.max_frame] - 输出视频最大帧数，默认121
+   */
+  async submitVideoEditTask(requestData) {
+    try {
+      console.log('API Service: Submitting Video Edit task');
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVSync2AsyncSubmitTask&Version=2022-08-31`;
+      
+      // 构建请求体
+      const requestBody = {
+        req_key: 'dm_seedance_videoedit_tob',
+        prompt: requestData.prompt,
+        video_url: requestData.video_url
+      };
+      
+      // 添加可选参数
+      if (requestData.seed !== undefined) {
+        requestBody.seed = requestData.seed;
+      }
+      if (requestData.max_frame !== undefined) {
+        requestBody.max_frame = requestData.max_frame;
+      }
+      
+      const bodyString = JSON.stringify(requestBody);
+      
+      console.log('Video Edit Submit Request:', {
+        url: url,
+        prompt: requestData.prompt.substring(0, 50) + '...',
+        video_url: requestData.video_url,
+        seed: requestBody.seed,
+        max_frame: requestBody.max_frame,
+        accessKeyId: requestData.accessKeyId.substring(0, 8) + '***'
+      });
+      
+      // 使用签名V4生成签名
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+      
+      const responseText = await response.text();
+      console.log('Video Edit Submit Raw Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type'),
+        responseText: responseText.substring(0, 200)
+      });
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`API返回了非JSON响应: ${responseText.substring(0, 200)}`);
+      }
+      
+      console.log('Video Edit Submit Parsed Data:', {
+        code: data.code,
+        message: data.message,
+        task_id: data.data?.task_id,
+        full_data: data
+      });
+      
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      console.log('Video Edit Submit API Success:', {
+        status: response.status,
+        task_id: data.data?.task_id
+      });
+      
+      return {
+        success: true,
+        data: {
+          task_id: data.data?.task_id,
+          ...data.data
+        }
+      };
+      
+    } catch (error) {
+      console.error('Video Edit Submit Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'VIDEO_EDIT_SUBMIT_ERROR'
+        }
+      };
+    }
+  }
+  
+  /**
+   * 查询视频编辑任务结果
+   * @param {Object} requestData - 请求数据
+   * @param {string} requestData.accessKeyId - AccessKeyId
+   * @param {string} requestData.secretAccessKey - SecretAccessKey
+   * @param {string} requestData.task_id - 任务ID
+   */
+  async queryVideoEditTask(requestData) {
+    try {
+      console.log('API Service: Querying Video Edit task:', requestData.task_id);
+      
+      if (!requestData.accessKeyId || !requestData.secretAccessKey) {
+        throw new Error('需要提供 AccessKeyId 和 SecretAccessKey');
+      }
+      
+      const visualBaseURL = 'https://visual.volcengineapi.com';
+      const url = `${visualBaseURL}?Action=CVSync2AsyncGetResult&Version=2022-08-31`;
+      
+      // 构建请求体
+      const requestBody = {
+        req_key: 'dm_seedance_videoedit_tob',
+        task_id: requestData.task_id
+      };
+      
+      const bodyString = JSON.stringify(requestBody);
+      
+      console.log('Video Edit Query Request:', {
+        url: url,
+        task_id: requestData.task_id,
+        accessKeyId: requestData.accessKeyId.substring(0, 8) + '***'
+      });
+      
+      // 使用签名V4生成签名
+      const signer = new SignatureV4(requestData.accessKeyId, requestData.secretAccessKey);
+      const baseHeaders = { 'Content-Type': 'application/json' };
+      const signedHeaders = signer.sign('POST', url, baseHeaders, bodyString);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: signedHeaders,
+        body: bodyString
+      });
+      
+      const responseText = await response.text();
+      console.log('Video Edit Query Raw Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type'),
+        responseText: responseText.substring(0, 200)
+      });
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`API返回了非JSON响应: ${responseText.substring(0, 200)}`);
+      }
+      
+      console.log('Video Edit Query Parsed Data:', {
+        code: data.code,
+        message: data.message,
+        status: data.data?.status,
+        has_video: !!data.data?.video_url,
+        full_data: data
+      });
+      
+      if (!response.ok || (data.code && data.code !== 10000)) {
+        // 特殊处理服务器内部错误
+        if (data.code === 50501 || data.code === 50500) {
+          console.warn('⚠️ Video Edit Query: Server Internal Error - Task may still be processing');
+          console.warn('Error details:', data.message?.substring(0, 200));
+          
+          // 返回一个特殊的状态，而不是抛出错误
+          return {
+            success: true,
+            data: {
+              status: 'generating',  // 标记为处理中
+              message: '任务处理中，请稍后再试。如果持续出现此错误，可能是视频格式不支持。',
+              server_error: true,
+              error_code: data.code,
+              error_message: data.message
+            }
+          };
+        }
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      console.log('Video Edit Query API Success:', {
+        status: response.status,
+        task_status: data.data?.status,
+        has_video: !!data.data?.video_url
+      });
+      
+      return {
+        success: true,
+        data: {
+          status: data.data?.status,
+          video_url: data.data?.video_url,
+          aigc_meta_tagged: data.data?.aigc_meta_tagged,
+          message: data.message,
+          ...data.data
+        }
+      };
+      
+    } catch (error) {
+      console.error('Video Edit Query Error:', error.message);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'VIDEO_EDIT_QUERY_ERROR'
         }
       };
     }

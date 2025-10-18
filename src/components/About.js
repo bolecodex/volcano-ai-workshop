@@ -15,7 +15,7 @@ function About({ electronInfo }) {
     { icon: 'bi-camera-video', title: 'AI视频生成', description: '即梦3.0 Pro，文生视频、图生视频', badge: null },
     { icon: 'bi-person-video2', title: '动作模仿', description: '即梦版本，更稳定逼真，支持多画幅', badge: 'UP' },
     { icon: 'bi-person-video3', title: '数字人', description: 'OmniHuman1.5，图片+音频生成视频', badge: 'NEW' },
-    { icon: 'bi-search-heart', title: '智能搜索', description: '多模态检索，向量数据库', badge: null },
+    { icon: 'bi-search-heart', title: '素材搜索', description: '多模态检索，向量数据库', badge: null },
     { icon: 'bi-laptop', title: '跨平台', description: '支持 Windows、macOS 和 Linux', badge: null },
     { icon: 'bi-shield-check', title: '安全可靠', description: '本地存储密钥，保护隐私', badge: null },
     { icon: 'bi-lightning', title: '快速高效', description: '优化的性能和用户体验', badge: null }
@@ -48,7 +48,7 @@ function About({ electronInfo }) {
               </h3>
               <p className="lead text-muted mb-4">
                 基于火山引擎强大的AI能力打造的<strong>全能型</strong>智能创作平台。
-                集成<strong>图片生成、智能绘图、视频生成、动作模仿、数字人、智能搜索</strong>等多种AI创作工具，
+                集成<strong>图片生成、智能绘图、视频生成、动作模仿、数字人、素材搜索</strong>等多种AI创作工具，
                 为创作者提供便捷高效的创作体验。使用Electron + React技术栈构建，支持跨平台运行。
               </p>
               <div className="mb-4">

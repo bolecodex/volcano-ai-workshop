@@ -305,10 +305,10 @@ function SmartSearch() {
         <Col>
           <h2>
             <i className="bi bi-search-heart me-2"></i>
-            智能搜索
+            素材搜索
           </h2>
           <p className="text-muted">
-            基于火山引擎 VikingDB 向量数据库的多模态智能搜索，支持文搜文/图/视频、图搜图/视频
+            基于火山引擎 VikingDB 向量数据库的多模态素材搜索，支持文搜文/图/视频、图搜图/视频
           </p>
         </Col>
       </Row>
@@ -822,7 +822,7 @@ function SmartSearch() {
           <Card>
             <Card.Body>
               <h5>功能说明</h5>
-              <p>智能搜索基于火山引擎 VikingDB 向量数据库，支持多模态搜索。</p>
+              <p>素材搜索基于火山引擎 VikingDB 向量数据库，支持多模态搜索。</p>
 
               <h6 className="mt-3">搜索模式</h6>
               <ul>

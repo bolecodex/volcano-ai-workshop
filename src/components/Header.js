@@ -40,7 +40,7 @@ function Header() {
             <span className="me-3">🎬 视频生成</span>
             <span className="me-3">🎭 动作模仿 <Badge bg="warning" pill>UP</Badge></span>
             <span className="me-3">🧑 数字人 <Badge bg="danger" pill>NEW</Badge></span>
-            <span>🔍 智能搜索</span>
+            <span>🔍 素材搜索</span>
           </p>
         </div>
       </Container>

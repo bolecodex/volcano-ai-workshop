@@ -739,6 +739,44 @@ function setupIpcHandlers() {
       };
     }
   });
+
+  // ===== 视频编辑 IPC Handlers =====
+  
+  ipcMain.handle('submit-video-edit-task', async (event, requestData) => {
+    console.log('🎬 IPC: Submitting Video Edit task');
+    try {
+      const result = await apiService.submitVideoEditTask(requestData);
+      console.log('✅ IPC: Video Edit task submitted');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in submit-video-edit-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
+
+  ipcMain.handle('query-video-edit-task', async (event, requestData) => {
+    console.log('🔍 IPC: Querying Video Edit task:', requestData.task_id);
+    try {
+      const result = await apiService.queryVideoEditTask(requestData);
+      console.log('✅ IPC: Video Edit task query completed');
+      return result;
+    } catch (error) {
+      console.error('❌ IPC Error in query-video-edit-task:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'IPC_ERROR'
+        }
+      };
+    }
+  });
   
   console.log('✅ IPC handlers setup completed');
 }

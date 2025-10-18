@@ -247,5 +247,45 @@ export const storage = {
       console.error('Failed to clear Jimeng 3.0 Pro tasks:', error);
       return false;
     }
+  },
+
+  // Video Edit tasks management
+  setVideoEditHistory: (history) => {
+    try {
+      localStorage.setItem('video_edit_history', JSON.stringify(history));
+      return true;
+    } catch (error) {
+      console.error('Failed to save video edit history:', error);
+      return false;
+    }
+  },
+
+  getVideoEditHistory: () => {
+    try {
+      const history = localStorage.getItem('video_edit_history');
+      return history ? JSON.parse(history) : [];
+    } catch (error) {
+      console.error('Failed to get video edit history:', error);
+      return [];
+    }
+  },
+
+  clearVideoEditHistory: () => {
+    try {
+      localStorage.removeItem('video_edit_history');
+      return true;
+    } catch (error) {
+      console.error('Failed to clear video edit history:', error);
+      return false;
+    }
+  },
+
+  // TOS config alias for consistency
+  getTosConfig: function() {
+    return this.getTOSConfig();
+  },
+
+  setTosConfig: function(config) {
+    return this.setTOSConfig(config);
   }
 };

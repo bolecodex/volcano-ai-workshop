@@ -163,6 +163,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return ipcRenderer.invoke('submit-inpainting-task', requestData);
   },
 
+  // ===== 视频编辑 APIs =====
+  
+  submitVideoEditTask: (requestData) => {
+    console.log('🎬 Preload: Calling submit-video-edit-task via IPC');
+    return ipcRenderer.invoke('submit-video-edit-task', requestData);
+  },
+
+  queryVideoEditTask: (requestData) => {
+    console.log('🔍 Preload: Calling query-video-edit-task via IPC');
+    return ipcRenderer.invoke('query-video-edit-task', requestData);
+  },
+
   // TOS Upload
   uploadToTOS: (fileData, config) => {
     console.log('📤 Preload: Calling upload-to-tos via IPC');

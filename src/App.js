@@ -11,6 +11,7 @@ import MotionImitation from './components/MotionImitation';
 import SmartSearch from './components/SmartSearch';
 import InpaintingEditor from './components/InpaintingEditor';
 import DigitalHuman from './components/DigitalHuman';
+import VideoEditor from './components/VideoEditor';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -39,6 +40,8 @@ function App() {
         return <ImageGenerator />;
       case 'inpainting-editor':
         return <InpaintingEditor />;
+      case 'video-editor':
+        return <VideoEditor />;
       case 'video-generator':
         return <VideoGenerator />;
       case 'motion-imitation':
