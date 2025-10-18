@@ -1,20 +1,49 @@
 /**
  * 前端 API 客户端
- * 用于替换 Electron IPC 调用,直接调用后端 HTTP API
+ * 直接调用火山引擎云端 API
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// 火山引擎API基础地址
+const VOLCANO_API_BASE_URL = 'https://api-vikingdb.volces.com';  // 向量数据库API
+const ARK_API_BASE_URL = 'https://ark.cn-beijing.volces.com';   // 方舟API
 
 class APIClient {
   constructor() {
-    this.baseURL = API_BASE_URL;
+    // 不再使用本地代理，直接连接云端
+    this.baseURL = null;
   }
 
   /**
-   * 通用请求方法
+   * 通用请求方法 - 直接调用云端API
    */
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // 判断API类型，选择正确的基础URL
+    let baseURL;
+    
+    if (endpoint.startsWith('/api/v3/')) {
+      // 方舟图片生成API
+      baseURL = ARK_API_BASE_URL;
+      endpoint = endpoint.replace('/api', '');
+    } else if (endpoint.startsWith('/api/video/')) {
+      // 方舟视频生成API  
+      baseURL = ARK_API_BASE_URL;
+      endpoint = endpoint.replace('/api/video', '/api/v1/text2video');
+    } else if (endpoint.startsWith('/api/embedding/') || endpoint.startsWith('/api/search/') || endpoint.startsWith('/api/vector/')) {
+      // 向量数据库API
+      baseURL = VOLCANO_API_BASE_URL;
+    } else {
+      // 其他API需要通过IPC或本地服务器
+      console.warn(`Endpoint ${endpoint} 需要使用 Electron IPC 或配置本地代理服务器`);
+      return {
+        success: false,
+        error: {
+          message: '该API需要使用Electron桌面应用或配置本地代理服务器',
+          code: 'UNSUPPORTED_ENDPOINT'
+        }
+      };
+    }
+    
+    const url = `${baseURL}${endpoint}`;
     const config = {
       headers: {
         'Content-Type': 'application/json',

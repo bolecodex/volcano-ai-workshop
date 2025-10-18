@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Form, Button, Alert, Badge, Spinner, Image, Modal } from 'react-bootstrap';
 import { storage } from '../utils/storage';
+import { webAPI } from '../utils/apiClient';
 
 function ImageGenerator() {
   const [formData, setFormData] = useState({
@@ -751,8 +752,8 @@ function ImageGenerator() {
       let result;
       
       if (window.electronAPI) {
-        // Use IPC communication in Electron
-        console.log('Using IPC communication');
+        // 优先使用 Electron IPC
+        console.log('使用 Electron IPC 通信');
         setProxyStatus('working');
         
         const requestData = {
@@ -768,35 +769,22 @@ function ImageGenerator() {
         
         setResults(result.data.data || []);
       } else {
-        // Fallback to HTTP request in browser
-        console.log('Using HTTP request (browser mode)');
+        // Web模式：直接调用云端API
+        console.log('Web模式：直接连接火山引擎云端API');
         setProxyStatus('failed');
         
-        const response = await fetch('http://localhost:3001/api/v3/images/generations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${cleanApiKey}`
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        const contentType = response.headers.get('content-type');
-        let data;
+        const requestData = {
+          ...requestBody,
+          apiKey: cleanApiKey
+        };
         
-        if (contentType && contentType.includes('application/json')) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          console.error('Non-JSON response received:', text.substring(0, 200));
-          throw new Error('服务器返回了非 JSON 响应，可能是代理配置问题');
+        result = await webAPI.generateImages(requestData);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || '云端API调用失败');
         }
-
-        if (!response.ok) {
-          throw new Error(data.error?.message || `HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        setResults(data.data || []);
+        
+        setResults(result.data.data || []);
       }
       
     } catch (err) {
@@ -862,8 +850,8 @@ function ImageGenerator() {
 
     try {
       if (window.electronAPI) {
-        // Use IPC communication for testing
-        console.log('Testing IPC connection');
+        // 使用 Electron IPC 测试连接
+        console.log('使用 IPC 测试连接');
         const result = await window.electronAPI.testConnection(cleanApiKey);
         
         if (result.success) {
@@ -877,46 +865,24 @@ function ImageGenerator() {
           setError(`连接测试失败: ${result.error?.message || '未知错误'}`);
         }
       } else {
-        // Fallback to HTTP request for browser mode
-        console.log('Testing HTTP connection (browser mode)');
-        const response = await fetch('http://localhost:3001/api/v3/images/generations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${cleanApiKey}`
-          },
-          body: JSON.stringify({
-            model: 'doubao-seedream-4-0-250828',
-            prompt: 'test',
-            size: '2K',
-            sequential_image_generation: 'disabled',
-            response_format: 'url',
-            watermark: true
-          })
-        });
-
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await response.text();
-          console.error('Test connection: Non-JSON response received:', text.substring(0, 200));
-          setError('代理配置可能有问题，服务器返回了 HTML 页面而不是 API 响应');
-          return;
-        }
-
-        if (response.status === 401) {
-          setError('API Key 无效或已过期');
-        } else if (response.status === 403) {
-          setError('API Key 权限不足');
-        } else if (response.ok || response.status === 400) {
+        // Web模式：直接调用云端API测试
+        console.log('Web模式：直接测试云端API连接');
+        const result = await webAPI.testConnection(cleanApiKey);
+        
+        if (result.success) {
           setError('');
           alert('API 连接测试成功！您可以开始生成图片了。');
+        } else if (result.status === 401) {
+          setError('API Key 无效或已过期');
+        } else if (result.status === 403) {
+          setError('API Key 权限不足');
         } else {
-          setError(`连接测试失败: HTTP ${response.status}`);
+          setError(`连接测试失败: ${result.error?.message || '未知错误'}`);
         }
       }
     } catch (err) {
       if (err.message.includes('Failed to fetch')) {
-        setError('网络连接失败，请检查网络或在 Electron 桌面应用中使用');
+        setError('网络连接失败，请检查网络连接或CORS设置');
       } else {
         setError(`连接测试失败: ${err.message}`);
       }

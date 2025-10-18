@@ -17,6 +17,7 @@ import {
   InputGroup
 } from 'react-bootstrap';
 import { storage } from '../utils/storage';
+import { webAPI } from '../utils/apiClient';
 
 function VideoGenerator() {
   // 状态管理
@@ -477,21 +478,8 @@ function VideoGenerator() {
           // Electron环境，使用IPC
           result = await window.electronAPI.getVideoTasks(queryParams, apiKey);
         } else {
-          // Web环境，使用HTTP请求
-          const params = new URLSearchParams();
-          if (queryParams.page_num) params.append('page_num', queryParams.page_num);
-          if (queryParams.page_size) params.append('page_size', queryParams.page_size);
-          if (queryParams.status) params.append('filter.status', queryParams.status);
-          if (queryParams.task_ids) params.append('filter.task_ids', queryParams.task_ids);
-          if (queryParams.model) params.append('filter.model', queryParams.model);
-          
-          const response = await fetch(`/api/video/tasks?${params.toString()}`, {
-            headers: {
-              'Authorization': `Bearer ${apiKey}`
-            }
-          });
-          const data = await response.json();
-          result = response.ok ? { success: true, data } : { success: false, error: data.error };
+          // Web环境，直接调用云端API
+          result = await webAPI.getVideoTasks({ queryParams, apiKey });
         }
         
         if (result.success) {
@@ -630,20 +618,14 @@ function VideoGenerator() {
         return;
       }
       
-      // 使用IPC或HTTP请求
+      // 使用IPC或云端API
       let result;
       if (window.electronAPI) {
         // Electron环境，使用IPC
-        result = await window.electronAPI.getVideoTask(taskId, apiKey);
+        result = await window.electronAPI.getVideoTask({ taskId, apiKey });
       } else {
-        // Web环境，使用HTTP请求
-        const response = await fetch(`/api/video/tasks/${taskId}`, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`
-          }
-        });
-        const data = await response.json();
-        result = response.ok ? { success: true, data } : { success: false, error: data.error };
+        // Web环境，直接调用云端API
+        result = await webAPI.getVideoTask({ taskId, apiKey });
       }
       
       if (result.success) {
@@ -692,26 +674,14 @@ function VideoGenerator() {
         return;
       }
       
-      // 使用IPC或HTTP请求
+      // 使用IPC或云端API
       let result;
       if (window.electronAPI) {
         // Electron环境，使用IPC
-        result = await window.electronAPI.deleteVideoTask(taskId, apiKey);
+        result = await window.electronAPI.deleteVideoTask({ taskId, apiKey });
       } else {
-        // Web环境，使用HTTP请求
-        const response = await fetch(`/api/video/tasks/${taskId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`
-          }
-        });
-        
-        if (response.ok) {
-          result = { success: true };
-        } else {
-          const data = await response.json();
-          result = { success: false, error: data.error };
-        }
+        // Web环境，直接调用云端API
+        result = await webAPI.deleteVideoTask({ taskId, apiKey });
       }
       
       if (result.success) {
