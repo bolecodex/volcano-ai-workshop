@@ -3019,6 +3019,177 @@ class APIService {
       };
     }
   }
+
+  /**
+   * 大模型语音合成 (BigTTS)
+   * @param {Object} requestData - 请求数据
+   * @returns {Promise<Object>} - 返回结果
+   */
+  async textToSpeech(requestData) {
+    try {
+      const url = 'https://openspeech.bytedance.com/api/v1/tts';
+
+      console.log('BigTTS Request:', {
+        url: url,
+        voice_type: requestData.audio.voice_type,
+        text_length: requestData.request.text?.length || 0,
+        encoding: requestData.audio.encoding,
+        appid: requestData.app.appid,
+        hasToken: !!requestData.app.token,
+        tokenLength: requestData.app.token?.length || 0
+      });
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer;${requestData.app.token}`
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('BigTTS API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText
+        });
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      console.log('BigTTS Response:', {
+        code: data.code,
+        message: data.message,
+        hasData: !!data.data
+      });
+
+      if (data.code !== 3000) {
+        throw new Error(data.message || `TTS Error: code ${data.code}`);
+      }
+
+      return {
+        success: true,
+        data: {
+          audio_base64: data.data,
+          format: requestData.audio.encoding || 'mp3',
+          duration: data.addition?.duration,
+          reqid: data.reqid
+        }
+      };
+
+    } catch (error) {
+      console.error('BigTTS Error:', {
+        message: error.message,
+        stack: error.stack
+      });
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'TTS_ERROR'
+        }
+      };
+    }
+  }
+
+  // 火山方舟视觉理解API
+  async visualUnderstanding(requestData) {
+    try {
+      const url = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+
+      console.log('Visual Understanding Request:', {
+        url: url,
+        model: requestData.model,
+        mode: requestData.mode,
+        imageSource: requestData.imageSource,
+        promptLength: requestData.prompt?.length || 0
+      });
+
+      // 构造消息内容
+      const content = [];
+
+      // 添加图片
+      if (requestData.imageSource === 'url') {
+        content.push({
+          type: 'image_url',
+          image_url: { url: requestData.imageData },
+          ...(requestData.detail && requestData.mode === 'understanding' ? { detail: requestData.detail } : {})
+        });
+      } else {
+        // Base64格式
+        content.push({
+          type: 'image_url',
+          image_url: { url: requestData.imageData },
+          ...(requestData.detail && requestData.mode === 'understanding' ? { detail: requestData.detail } : {})
+        });
+      }
+
+      // 添加文本提示
+      content.push({
+        type: 'text',
+        text: requestData.prompt
+      });
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${requestData.apiKey}`
+        },
+        body: JSON.stringify({
+          model: requestData.model,
+          messages: [{
+            role: 'user',
+            content: content
+          }],
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Visual Understanding API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText
+        });
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      console.log('Visual Understanding Response:', {
+        hasChoices: !!data.choices,
+        choicesLength: data.choices?.length || 0
+      });
+
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('API返回数据格式错误');
+      }
+
+      return {
+        success: true,
+        content: data.choices[0].message.content,
+        usage: data.usage
+      };
+
+    } catch (error) {
+      console.error('Visual Understanding Error:', {
+        message: error.message,
+        stack: error.stack
+      });
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'VISUAL_UNDERSTANDING_ERROR'
+        }
+      };
+    }
+  }
 }
 
 module.exports = new APIService();

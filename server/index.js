@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../build')));
 
 // API Routes
@@ -226,6 +227,111 @@ app.delete('/api/video/tasks/:id', async (req, res) => {
 });
 
 // Health check
+// Text-to-Speech endpoint (BigTTS)
+app.post('/api/tts/synthesize', async (req, res) => {
+  console.log('Received TTS synthesis request');
+  
+  try {
+    const requestData = req.body;
+    
+    // 验证必需参数
+    if (!requestData.app || !requestData.app.appid || !requestData.app.token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required app credentials (appid or token)'
+      });
+    }
+    
+    if (!requestData.request || !requestData.request.text) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required text parameter'
+      });
+    }
+    
+    // 调用 API 服务
+    const result = await apiService.textToSpeech(requestData);
+    
+    if (result.success) {
+      // 构建音频数据URL
+      const audioBase64 = result.data.audio_base64;
+      const format = result.data.format;
+      const audioDataUrl = `data:audio/${format};base64,${audioBase64}`;
+      
+      res.json({
+        success: true,
+        audioUrl: audioDataUrl,
+        duration: result.data.duration,
+        reqid: result.data.reqid
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error.message
+      });
+    }
+  } catch (error) {
+    console.error('TTS synthesis error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+// Visual Understanding endpoint
+app.post('/api/visual-understanding/analyze', async (req, res) => {
+  console.log('Received visual understanding request');
+
+  try {
+    const requestData = req.body;
+
+    // Validate required parameters
+    if (!requestData.apiKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required API key'
+      });
+    }
+
+    if (!requestData.imageData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required image data'
+      });
+    }
+
+    if (!requestData.prompt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required prompt'
+      });
+    }
+
+    // Call API service
+    const result = await apiService.visualUnderstanding(requestData);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        content: result.content,
+        usage: result.usage
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error.message
+      });
+    }
+  } catch (error) {
+    console.error('Visual understanding error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -235,10 +341,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve React app for any other routes
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build/index.html'));
-});
+// Serve React app for any other routes (commented out for Express 5.x compatibility)
+// In Electron apps, this is not needed as files are served directly
+// app.get('/*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../build/index.html'));
+// });
 
 // Start server
 const server = app.listen(PORT, () => {

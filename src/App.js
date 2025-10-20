@@ -12,6 +12,8 @@ import SmartSearch from './components/SmartSearch';
 import InpaintingEditor from './components/InpaintingEditor';
 import DigitalHuman from './components/DigitalHuman';
 import VideoEditor from './components/VideoEditor';
+import VoiceDubbing from './components/VoiceDubbing';
+import VisualUnderstanding from './components/VisualUnderstanding';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -48,6 +50,10 @@ function App() {
         return <MotionImitation />;
       case 'digital-human':
         return <DigitalHuman />;
+      case 'voice-dubbing':
+        return <VoiceDubbing />;
+      case 'visual-understanding':
+        return <VisualUnderstanding />;
       case 'smart-search':
         return <SmartSearch />;
       case 'settings':

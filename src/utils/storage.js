@@ -287,5 +287,44 @@ export const storage = {
 
   setTosConfig: function(config) {
     return this.setTOSConfig(config);
+  },
+
+  // Generic get/set/remove methods for custom data
+  get: (key, defaultValue = null) => {
+    try {
+      const value = localStorage.getItem(key);
+      if (value === null) {
+        return defaultValue;
+      }
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    } catch (error) {
+      console.error(`Failed to get ${key}:`, error);
+      return defaultValue;
+    }
+  },
+
+  set: (key, value) => {
+    try {
+      const valueToStore = typeof value === 'string' ? value : JSON.stringify(value);
+      localStorage.setItem(key, valueToStore);
+      return true;
+    } catch (error) {
+      console.error(`Failed to set ${key}:`, error);
+      return false;
+    }
+  },
+
+  remove: (key) => {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.error(`Failed to remove ${key}:`, error);
+      return false;
+    }
   }
 };

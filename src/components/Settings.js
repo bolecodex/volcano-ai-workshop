@@ -23,8 +23,19 @@ function Settings() {
     endpoint: ''
   });
 
+  const [ttsCredentials, setTtsCredentials] = useState({
+    appId: '',
+    accessToken: ''
+  });
+
+  const [arkCredentials, setArkCredentials] = useState({
+    apiKey: ''
+  });
+
   const [showAlert, setShowAlert] = useState(false);
   const [credentialsAlert, setCredentialsAlert] = useState({ show: false, type: '', message: '' });
+  const [ttsAlert, setTtsAlert] = useState({ show: false, type: '', message: '' });
+  const [arkAlert, setArkAlert] = useState({ show: false, type: '', message: '' });
 
   // 加载已保存的API凭证和TOS配置
   useEffect(() => {
@@ -35,6 +46,18 @@ function Settings() {
     });
     
     setTosConfig(storage.getTOSConfig());
+    
+    // 加载TTS凭证
+    const savedTtsCredentials = storage.get('tts_credentials', {});
+    if (savedTtsCredentials.appId || savedTtsCredentials.accessToken) {
+      setTtsCredentials(savedTtsCredentials);
+    }
+
+    // 加载火山方舟凭证
+    const savedArkCredentials = storage.get('ark_credentials', {});
+    if (savedArkCredentials.apiKey) {
+      setArkCredentials(savedArkCredentials);
+    }
   }, []);
 
   const handleSettingChange = (key, value) => {
@@ -127,6 +150,78 @@ function Settings() {
       }, 3000);
     } catch (error) {
       setCredentialsAlert({ 
+        show: true, 
+        type: 'danger', 
+        message: '保存失败：' + error.message 
+      });
+    }
+  };
+
+  const handleTtsCredentialChange = (key, value) => {
+    setTtsCredentials(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleSaveTtsCredentials = () => {
+    try {
+      if (ttsCredentials.appId && ttsCredentials.accessToken) {
+        storage.set('tts_credentials', ttsCredentials);
+        setTtsAlert({ 
+          show: true, 
+          type: 'success', 
+          message: '语音合成凭证保存成功！' 
+        });
+      } else {
+        setTtsAlert({ 
+          show: true, 
+          type: 'warning', 
+          message: '请填写 AppID 和 Access Token' 
+        });
+      }
+      
+      setTimeout(() => {
+        setTtsAlert({ show: false, type: '', message: '' });
+      }, 3000);
+    } catch (error) {
+      setTtsAlert({ 
+        show: true, 
+        type: 'danger', 
+        message: '保存失败：' + error.message 
+      });
+    }
+  };
+
+  const handleArkCredentialChange = (key, value) => {
+    setArkCredentials(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleSaveArkCredentials = () => {
+    try {
+      if (arkCredentials.apiKey) {
+        storage.set('ark_credentials', arkCredentials);
+        setArkAlert({ 
+          show: true, 
+          type: 'success', 
+          message: '火山方舟凭证保存成功！' 
+        });
+      } else {
+        setArkAlert({ 
+          show: true, 
+          type: 'warning', 
+          message: '请填写 API Key' 
+        });
+      }
+      
+      setTimeout(() => {
+        setArkAlert({ show: false, type: '', message: '' });
+      }, 3000);
+    } catch (error) {
+      setArkAlert({ 
         show: true, 
         type: 'danger', 
         message: '保存失败：' + error.message 
@@ -346,6 +441,147 @@ function Settings() {
               <div className="mt-3 text-end">
                 <Button variant="info" onClick={handleSaveTosConfig}>
                   <i className="bi bi-save me-1"></i>保存 TOS 配置
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+
+          {/* 火山方舟凭证配置 */}
+          <Card className="feature-card mb-4 border-warning">
+            <Card.Header className="bg-warning text-dark">
+              <i className="bi bi-eye me-2"></i>
+              火山方舟凭证配置（用于视觉理解功能）
+            </Card.Header>
+            <Card.Body>
+              {arkAlert.show && (
+                <Alert variant={arkAlert.type} className="mb-3">
+                  {arkAlert.message}
+                </Alert>
+              )}
+
+              <Alert variant="info" className="py-2 px-3 mb-3">
+                <small>
+                  <i className="bi bi-info-circle me-1"></i>
+                  <strong>说明：</strong>视觉理解功能使用火山方舟大模型服务平台的视觉理解和视觉定位API。
+                  <br />
+                  请先在 <a href="https://console.volcengine.com/ark" target="_blank" rel="noopener noreferrer">火山方舟控制台</a> 开通服务并获取 API Key。
+                </small>
+              </Alert>
+
+              <Form.Group className="mb-3">
+                <Form.Label>
+                  <i className="bi bi-key me-1"></i>
+                  API Key <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="输入火山方舟 API Key"
+                  value={arkCredentials.apiKey}
+                  onChange={(e) => handleArkCredentialChange('apiKey', e.target.value)}
+                />
+                <Form.Text className="text-muted">
+                  在火山方舟控制台获取 API Key
+                </Form.Text>
+              </Form.Group>
+
+              <Alert variant="warning" className="py-2 px-3">
+                <small>
+                  <i className="bi bi-exclamation-triangle me-1"></i>
+                  <strong>注意：</strong>
+                  <ul className="mb-0 mt-2">
+                    <li>支持的模型：doubao-seed-1-6-251015, doubao-1.5-vision-pro 等</li>
+                    <li>支持图片理解、视觉定位（Grounding）功能</li>
+                    <li>凭证会安全地保存在本地浏览器存储中</li>
+                    <li>详细文档：<a href="https://www.volcengine.com/docs/82379/1263642" target="_blank" rel="noopener noreferrer" className="text-white"><u>火山方舟API文档</u></a></li>
+                  </ul>
+                </small>
+              </Alert>
+
+              <div className="mt-3 text-end">
+                <Button variant="warning" onClick={handleSaveArkCredentials}>
+                  <i className="bi bi-save me-1"></i>
+                  保存火山方舟凭证
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+
+          {/* 语音合成凭证配置 */}
+          <Card className="feature-card mb-4 border-success">
+            <Card.Header className="bg-success text-white">
+              <i className="bi bi-music-note-beamed me-2"></i>
+              语音合成凭证配置（用于配音配乐功能）
+            </Card.Header>
+            <Card.Body>
+              {ttsAlert.show && (
+                <Alert variant={ttsAlert.type} className="mb-3">
+                  {ttsAlert.message}
+                </Alert>
+              )}
+
+              <Alert variant="info" className="py-2 px-3 mb-3">
+                <small>
+                  <i className="bi bi-info-circle me-1"></i>
+                  <strong>说明：</strong>配音配乐功能使用火山引擎豆包语音大模型语音合成API。
+                  <br />
+                  请先在 <a href="https://console.volcengine.com/speech" target="_blank" rel="noopener noreferrer">豆包语音控制台</a> 开通服务并获取凭证。
+                </small>
+              </Alert>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>
+                      <i className="bi bi-1-circle me-1"></i>
+                      App ID <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="输入应用 App ID"
+                      value={ttsCredentials.appId}
+                      onChange={(e) => handleTtsCredentialChange('appId', e.target.value)}
+                    />
+                    <Form.Text className="text-muted">
+                      在豆包语音控制台获取
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>
+                      <i className="bi bi-2-circle me-1"></i>
+                      Access Token <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="password"
+                      placeholder="输入 Access Token"
+                      value={ttsCredentials.accessToken}
+                      onChange={(e) => handleTtsCredentialChange('accessToken', e.target.value)}
+                    />
+                    <Form.Text className="text-muted">
+                      应用访问令牌
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Alert variant="warning" className="py-2 px-3">
+                <small>
+                  <i className="bi bi-exclamation-triangle me-1"></i>
+                  <strong>注意：</strong>
+                  <ul className="mb-0 mt-2">
+                    <li>使用大模型语音合成API需要先申请权限</li>
+                    <li>支持多种音色和情感设置</li>
+                    <li>凭证会安全地保存在本地浏览器存储中</li>
+                    <li>详细文档：<a href="https://www.volcengine.com/docs/6561/1294026" target="_blank" rel="noopener noreferrer" className="text-white"><u>豆包语音API文档</u></a></li>
+                  </ul>
+                </small>
+              </Alert>
+
+              <div className="mt-3 text-end">
+                <Button variant="success" onClick={handleSaveTtsCredentials}>
+                  <i className="bi bi-save me-1"></i>
+                  保存语音合成凭证
                 </Button>
               </div>
             </Card.Body>
